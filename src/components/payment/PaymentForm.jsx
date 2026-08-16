@@ -1,6 +1,7 @@
 // src/components/payment/PaymentForm.jsx
 
 import { useState } from "react";
+import { getPayments, savePayments } from "../../services/storage";
 
 const dummyInvoices = [
   { id: "INV001", customerName: "Rahul Sharma", total: 50000 },
@@ -8,11 +9,7 @@ const dummyInvoices = [
   { id: "INV003", customerName: "Priya Singh", total: 20000 },
 ];
 
-const dummyExistingPayments = [
-  { id: "PAY000", invoiceId: "INV001", amount: 20000 },
-];
-
-function PaymentForm() {
+function PaymentForm({ onPaymentAdded }) {
   const [selectedInvoice, setSelectedInvoice] = useState("");
   const [amount, setAmount] = useState("");
   const [method, setMethod] = useState("Cash");
@@ -36,11 +33,12 @@ function PaymentForm() {
     }
 
     const invoice = dummyInvoices.find((inv) => inv.id === selectedInvoice);
+    const existingPayments = getPayments();
 
     let alreadyPaid = 0;
-    for (let i = 0; i < dummyExistingPayments.length; i++) {
-      if (dummyExistingPayments[i].invoiceId === selectedInvoice) {
-        alreadyPaid += dummyExistingPayments[i].amount;
+    for (let i = 0; i < existingPayments.length; i++) {
+      if (existingPayments[i].invoiceId === selectedInvoice) {
+        alreadyPaid += existingPayments[i].amount;
       }
     }
 
@@ -56,12 +54,25 @@ function PaymentForm() {
       return;
     }
 
-    console.log("Valid payment:", {
+    const newPayment = {
+      id: "PAY" + Date.now(),
       invoiceId: selectedInvoice,
       amount: numericAmount,
       method: method,
       date: date,
-    });
+    };
+
+    const updatedPayments = [...existingPayments, newPayment];
+    savePayments(updatedPayments);
+
+    setSelectedInvoice("");
+    setAmount("");
+    setMethod("Cash");
+    setDate("");
+
+    if (onPaymentAdded) {
+      onPaymentAdded();
+    }
   }
 
   return (
