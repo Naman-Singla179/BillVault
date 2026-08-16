@@ -1,10 +1,10 @@
-import './Payments.css';
+import PaymentForm from '../../components/payment/PaymentForm';
 
 function Payments() {
   return (
-    <div className="payments-page">
+    <div style={{ padding: '20px' }}>
       <h1>Payments</h1>
-      <p>This page will show payment summary, the record-payment form, and payment history.</p>
+      <PaymentForm />
     </div>
   );
 }
