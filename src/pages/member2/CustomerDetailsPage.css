@@ -1,0 +1,51 @@
+.customer-details-back {
+  display: inline-block;
+  font-size: 13px;
+  color: rgb(154, 161, 175);
+  text-decoration: none;
+  margin-bottom: 8px;
+}
+
+.customer-details-back:hover {
+  color: rgb(233, 234, 238);
+}
+
+.customer-details-card {
+  padding: 24px;
+  max-width: 560px;
+}
+
+.customer-details-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin: 0 0 20px;
+}
+
+.customer-details-list dt {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: rgb(107, 114, 128);
+  margin-bottom: 2px;
+}
+
+.customer-details-list dd {
+  margin: 0;
+  font-size: 14px;
+  color: rgb(233, 234, 238);
+}
+
+.customer-details-future {
+  padding: 16px 18px;
+  background: rgb(20, 23, 30);
+}
+
+.customer-details-future h3 {
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+
+.customer-details-future p {
+  font-size: 13px;
+}
