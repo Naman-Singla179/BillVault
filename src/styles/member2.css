@@ -1,15 +1,11 @@
-/* ==========================================================================
-   BillVault — global design tokens & base styles
-   Owned by Member 2 (application shell). Feature pages add their own
-   small CSS files and rely on these variables instead of redefining colors.
-   ========================================================================== */
+
 
 :root {
-  /* Typography */
+  
   --font-display: "Manrope", "Segoe UI", sans-serif;
   --font-body: "Inter", "Segoe UI", sans-serif;
 
-  /* Layout */
+  
   --sidebar-width: 232px;
   --navbar-height: 60px;
   --radius-sm: 6px;
@@ -61,7 +57,7 @@ button {
   font-family: var(--font-body);
 }
 
-/* Focus visibility for keyboard navigation (accessibility requirement) */
+
 a:focus-visible,
 button:focus-visible,
 input:focus-visible,
@@ -71,7 +67,7 @@ textarea:focus-visible {
   outline-offset: 2px;
 }
 
-/* ---------- Shared building blocks reused across Member 2 pages ---------- */
+
 
 .page {
   padding: 28px 32px 48px;

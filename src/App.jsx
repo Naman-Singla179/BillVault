@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import PageLayout from './components/member2/layout/PageLayout'
+import DashboardPage from './pages/shared/DashboardPage'
 import PlaceholderPage from './pages/shared/PlaceholderPage'
 import CustomersPage from './pages/member2/CustomersPage'
 import CustomerDetailsPage from './pages/member2/CustomerDetailsPage'
@@ -10,7 +11,7 @@ import InvoicePreviewPage from './pages/member2/InvoicePreviewPage'
 import NotFoundPage from './pages/member2/NotFoundPage'
 import './styles/member2.css'
 
-// Sample data for development
+
 const INITIAL_CUSTOMERS = [
   {
     id: 1,
@@ -52,9 +53,7 @@ function App() {
           <Route index element={<Navigate to="/dashboard" replace />} />
           <Route
             path="dashboard"
-            element={
-              <PlaceholderPage title="Dashboard" description="Revenue overview and recent activity" />
-            }
+            element={<DashboardPage />}
           />
           <Route
             path="invoices"

@@ -1,11 +1,6 @@
 import InvoicePreview from '../../components/member2/invoicePreview/InvoicePreview'
 
-/*
- * Sample data so the preview can be viewed on its own during Phase 1.
- * Integration point: once Invoice Core (Member 1) exists, this page
- * should receive `business`, `customer`, `invoice`, and `items` as
- * props/route data instead of using these placeholders.
- */
+
 const SAMPLE_BUSINESS = {
   name: 'Sharma Traders',
   email: 'billing@sharmatraders.com',

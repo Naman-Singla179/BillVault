@@ -1,15 +1,6 @@
 import './InvoicePreview.css'
 
-/**
- * Presentation-only invoice preview.
- *
- * Member 2 owns rendering only. This component does NOT calculate totals,
- * taxes, or discounts — it displays whatever numbers it is given.
- * Member 1 (Invoice Core) is responsible for computing `invoice` and
- * `items` and passing them in as props from the invoice creation flow.
- * Member 3 (Payment Core) is responsible for the real payment status
- * behind `invoice.paymentStatus`.
- */
+
 function InvoicePreview({ business, customer, invoice, items }) {
   function handlePrint() {
     window.print()
