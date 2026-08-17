@@ -1,3 +1,5 @@
+// src/components/payment/PaymentHistory.jsx
+
 import PaymentCard from './PaymentCard';
 
 function PaymentHistory({ payments }) {
@@ -8,7 +10,7 @@ function PaymentHistory({ payments }) {
   return (
     <div>
       {payments.map((payment) => (
-        <PaymentCard key={payment.id} payment={payment} />
+        <PaymentCard key={payment.id} payment={payment} allPayments={payments} />
       ))}
     </div>
   );
