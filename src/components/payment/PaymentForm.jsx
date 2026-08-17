@@ -1,13 +1,6 @@
-// src/components/payment/PaymentForm.jsx
-
 import { useState } from "react";
 import { getPayments, savePayments } from "../../services/storage";
-
-const dummyInvoices = [
-  { id: "INV001", customerName: "Rahul Sharma", total: 50000 },
-  { id: "INV002", customerName: "ABC Ltd", total: 30000 },
-  { id: "INV003", customerName: "Priya Singh", total: 20000 },
-];
+import dummyInvoices from "../../data/dummyInvoices";
 
 function PaymentForm({ onPaymentAdded }) {
   const [selectedInvoice, setSelectedInvoice] = useState("");

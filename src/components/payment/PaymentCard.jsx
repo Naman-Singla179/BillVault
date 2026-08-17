@@ -1,13 +1,6 @@
-// src/components/payment/PaymentCard.jsx
-
-import { calculateTotalPaid, calculateRemaining, calculatePaymentStatus } from '../../utils/paymentUtils';
+import { calculateTotalPaid, calculatePaymentStatus } from '../../utils/paymentUtils';
+import dummyInvoices from '../../data/dummyInvoices';
 import PaymentStatus from './PaymentStatus';
-
-const dummyInvoices = [
-  { id: "INV001", customerName: "Rahul Sharma", total: 50000, dueDate: "2026-08-10" },
-  { id: "INV002", customerName: "ABC Ltd", total: 30000, dueDate: "2026-08-20" },
-  { id: "INV003", customerName: "Priya Singh", total: 20000, dueDate: "2026-07-01" },
-];
 
 function PaymentCard({ payment, allPayments }) {
   const invoice = dummyInvoices.find((inv) => inv.id === payment.invoiceId);
