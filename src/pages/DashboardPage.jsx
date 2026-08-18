@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { IndianRupee, FileText, Clock, AlertCircle } from 'lucide-react'
 import { getInvoices, getPayments, getCustomers } from '../services/storage'
+import { calculateTotalPaid, calculateRemaining, calculatePaymentStatus } from '../utils/paymentUtils'
 import './DashboardPage.css'
 
 function DashboardPage() {
@@ -10,19 +11,25 @@ function DashboardPage() {
   const [payments] = useState(() => getPayments())
   const [customers] = useState(() => getCustomers())
 
-  const totalBilled = invoices.reduce((sum, inv) => sum + Number(inv.total), 0)
-  const totalPaid = payments.reduce((sum, p) => sum + Number(p.amount), 0)
-  const totalPending = totalBilled - totalPaid
+  let totalBilled = 0;
+  let totalPaid = 0;
+  let totalPending = 0;
+  let overdueAmount = 0;
 
-  const today = new Date().toISOString().split('T')[0]
-  const overdueAmount = invoices
-    .filter(inv => inv.status !== 'PAID' && inv.dueDate < today)
-    .reduce((sum, inv) => {
-      const invPayments = payments
-        .filter(p => p.invoiceId === inv.id)
-        .reduce((s, p) => s + p.amount, 0)
-      return sum + (Number(inv.total) - invPayments)
-    }, 0)
+  invoices.forEach(inv => {
+    const invTotalPaid = calculateTotalPaid(payments, inv.id);
+    const status = calculatePaymentStatus(inv, invTotalPaid);
+    const remaining = calculateRemaining(Number(inv.total), invTotalPaid);
+    
+    totalBilled += Number(inv.total);
+    totalPaid += invTotalPaid;
+
+    if (status === "OVERDUE") {
+      overdueAmount += remaining;
+    } else if (status !== "PAID") {
+      totalPending += remaining;
+    }
+  });
 
   const summaryCards = [
     {
@@ -106,14 +113,23 @@ function DashboardPage() {
                 <tbody>
                   {recentInvoices.map(inv => {
                     const customer = customers.find(c => c.id === inv.customerId || c.id === Number(inv.customerId));
+                    const invTotalPaid = calculateTotalPaid(payments, inv.id);
+                    const status = calculatePaymentStatus(inv, invTotalPaid);
+                    
                     return (
                       <tr key={inv.id} style={{ borderBottom: '1px solid #eee' }}>
                         <td style={{ padding: '10px' }}>{inv.id}</td>
                         <td style={{ padding: '10px' }}>{customer ? customer.name : 'Unknown'}</td>
                         <td style={{ padding: '10px' }}>{inv.date}</td>
                         <td style={{ padding: '10px' }}>₹{Number(inv.total).toFixed(2)}</td>
-                        <td style={{ padding: '10px', color: inv.status === 'PENDING' ? 'orange' : (inv.status === 'PAID' ? 'green' : 'inherit') }}>
-                          {inv.status}
+                        <td style={{ 
+                          padding: '10px', 
+                          color: status === 'PENDING' ? 'orange' : 
+                                 status === 'PAID' ? 'green' : 
+                                 status === 'OVERDUE' ? 'rgb(229, 72, 77)' : 'inherit',
+                          fontWeight: '500'
+                        }}>
+                          {status}
                         </td>
                       </tr>
                     );
