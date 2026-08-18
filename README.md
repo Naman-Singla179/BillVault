@@ -40,14 +40,6 @@ It allows freelancers, small businesses, and contractors to easily manage their 
 4. **Open your browser:**
    Navigate to `http://localhost:5173` to start using BillVault!
 
-## 🔧 Building for Production
-
-To create a production-ready optimized build, simply run:
-```bash
-npm run build
-```
-This will compile the application into the `dist/` folder, which can be deployed to any static hosting service like Vercel, Netlify, or GitHub Pages.
-
 ## 📝 Usage Guide
 
 1. **Start by adding a Customer**: Navigate to the **Customers** tab and click "Add Customer".
