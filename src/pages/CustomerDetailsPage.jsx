@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, useParams, Link } from 'react-router-dom'
-import CustomerForm from '../../components/member2/customers/CustomerForm'
+import CustomerForm from '../components/customers/CustomerForm'
 import './CustomerDetailsPage.css'
 
 function CustomerDetailsPage({ customers, onUpdate, onDelete }) {

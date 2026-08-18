@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom'
+import { IndianRupee, FileText, Clock, AlertCircle } from 'lucide-react'
 import './DashboardPage.css'
 
 const SUMMARY_CARDS = [
@@ -6,49 +7,26 @@ const SUMMARY_CARDS = [
     id: 'revenue',
     title: 'Total Revenue',
     value: '₹0',
-    icon: (
-      <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2" fill="none">
-        <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-      </svg>
-    ),
+    icon: <IndianRupee size={20} />,
   },
   {
     id: 'billed',
     title: 'Total Billed',
     value: '₹0',
-    icon: (
-      <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2" fill="none">
-        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-        <polyline points="14 2 14 8 20 8" />
-        <line x1="16" y1="13" x2="8" y2="13" />
-        <line x1="16" y1="17" x2="8" y2="17" />
-        <polyline points="10 9 9 9 8 9" />
-      </svg>
-    ),
+    icon: <FileText size={20} />,
   },
   {
     id: 'pending',
     title: 'Pending Payments',
     value: '₹0',
-    icon: (
-      <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2" fill="none">
-        <circle cx="12" cy="12" r="10" />
-        <polyline points="12 6 12 12 16 14" />
-      </svg>
-    ),
+    icon: <Clock size={20} />,
   },
   {
     id: 'overdue',
     title: 'Overdue Amount',
     value: '₹0',
     isWarning: true,
-    icon: (
-      <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2" fill="none">
-        <circle cx="12" cy="12" r="10" />
-        <line x1="12" y1="8" x2="12" y2="12" />
-        <line x1="12" y1="16" x2="12.01" y2="16" />
-      </svg>
-    ),
+    icon: <AlertCircle size={20} />,
   },
 ]
 
@@ -94,13 +72,7 @@ function DashboardPage() {
 
           <div className="dashboard-empty-state card">
             <div className="dashboard-empty-icon">
-              <svg viewBox="0 0 24 24" width="48" height="48" stroke="currentColor" strokeWidth="1.5" fill="none">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                <polyline points="14 2 14 8 20 8" />
-                <line x1="16" y1="13" x2="8" y2="13" />
-                <line x1="16" y1="17" x2="8" y2="17" />
-                <polyline points="10 9 9 9 8 9" />
-              </svg>
+              <FileText size={48} strokeWidth={1.5} />
             </div>
             <h3>No invoices yet</h3>
             <p>Create your first invoice to see it here.</p>

@@ -1,4 +1,4 @@
-import InvoicePreview from '../../components/member2/invoicePreview/InvoicePreview'
+import InvoicePreview from '../components/invoices/InvoicePreview'
 
 
 const SAMPLE_BUSINESS = {

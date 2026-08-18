@@ -1,6 +1,6 @@
 
 import { Link } from 'react-router-dom'
-import BusinessProfileForm from '../../components/member2/business/BusinessProfileForm'
+import BusinessProfileForm from '../components/business/BusinessProfileForm'
 
 function BusinessProfilePage({ profile, onSave }) {
   return (

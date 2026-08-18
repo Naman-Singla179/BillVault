@@ -1,15 +1,16 @@
 import { useState } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
-import PageLayout from './components/member2/layout/PageLayout'
-import DashboardPage from './pages/shared/DashboardPage'
-import PlaceholderPage from './pages/shared/PlaceholderPage'
-import CustomersPage from './pages/member2/CustomersPage'
-import CustomerDetailsPage from './pages/member2/CustomerDetailsPage'
+import PageLayout from './components/layout/PageLayout'
+import DashboardPage from './pages/DashboardPage'
+import PlaceholderPage from './pages/PlaceholderPage'
+import CustomersPage from './pages/CustomersPage'
+import CustomerDetailsPage from './pages/CustomerDetailsPage'
 
-import BusinessProfilePage from './pages/member2/BusinessProfilePage'
-import InvoicePreviewPage from './pages/member2/InvoicePreviewPage'
-import NotFoundPage from './pages/member2/NotFoundPage'
-import './styles/member2.css'
+import BusinessProfilePage from './pages/BusinessProfilePage'
+import InvoicePreviewPage from './pages/InvoicePreviewPage'
+import NotFoundPage from './pages/NotFoundPage'
+import LandingPage from './pages/LandingPage'
+import './styles/global.css'
 
 
 const INITIAL_CUSTOMERS = [
@@ -49,8 +50,8 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
+        <Route path="/" element={<LandingPage />} />
         <Route element={<PageLayout />}>
-          <Route index element={<Navigate to="/dashboard" replace />} />
           <Route
             path="dashboard"
             element={<DashboardPage />}

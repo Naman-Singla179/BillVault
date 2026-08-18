@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import CustomerList from '../../components/member2/customers/CustomerList'
-import CustomerForm from '../../components/member2/customers/CustomerForm'
+import CustomerList from '../components/customers/CustomerList'
+import CustomerForm from '../components/customers/CustomerForm'
 
 function CustomersPage({ customers, onAdd, onUpdate, onDelete }) {
   const [formOpen, setFormOpen] = useState(false)
