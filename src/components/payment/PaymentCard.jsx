@@ -1,11 +1,13 @@
 import { calculateTotalPaid, calculatePaymentStatus } from '../../utils/paymentUtils';
-import dummyInvoices from '../../data/dummyInvoices';
 import PaymentStatus from './PaymentStatus';
 
+import { getInvoices } from '../../services/storage';
+
 function PaymentCard({ payment, allPayments }) {
-  const invoice = dummyInvoices.find((inv) => inv.id === payment.invoiceId);
+  const savedInvoices = getInvoices();
+  const invoice = savedInvoices.find((inv) => String(inv.id) === String(payment.invoiceId));
   const totalPaid = calculateTotalPaid(allPayments, payment.invoiceId);
-  const status = calculatePaymentStatus(invoice, totalPaid);
+  const status = invoice ? calculatePaymentStatus(invoice, totalPaid) : "UNKNOWN";
 
   return (
     <div style={{ padding: '10px 0', borderBottom: '1px solid #333' }}>

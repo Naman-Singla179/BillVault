@@ -8,7 +8,7 @@ const NAV_ITEMS = [
   { to: '/payments', label: 'Payments' },
 ]
 
-function Navbar({ title }) {
+function Navbar() {
   return (
     <header className="navbar">
       <div className="navbar-left">

@@ -1,8 +1,8 @@
-import { useState } from 'react'
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import PageLayout from './components/layout/PageLayout'
 import DashboardPage from './pages/DashboardPage'
-import PlaceholderPage from './pages/PlaceholderPage'
+
 import CustomersPage from './pages/CustomersPage'
 import CustomerDetailsPage from './pages/CustomerDetailsPage'
 
@@ -13,7 +13,9 @@ import LandingPage from './pages/LandingPage'
 import './styles/global.css'
 
 import CreateInvoice from './pages/Invoices/CreateInvoice';
+import InvoicesPage from './pages/Invoices/Invoices';
 import Payments from './pages/Payments/Payments';
+import { getCustomers, saveCustomers } from './services/storage';
 
 const INITIAL_CUSTOMERS = [
   {
@@ -33,8 +35,15 @@ const INITIAL_CUSTOMERS = [
 ]
 
 function App() {
-  const [customers, setCustomers] = useState(INITIAL_CUSTOMERS)
+  const [customers, setCustomers] = useState(() => {
+    const saved = getCustomers();
+    return saved && saved.length > 0 ? saved : INITIAL_CUSTOMERS;
+  });
   const [businessProfile, setBusinessProfile] = useState(null)
+
+  useEffect(() => {
+    saveCustomers(customers);
+  }, [customers]);
 
   function addCustomer(data) {
     const newCustomer = { id: Date.now(), ...data }
@@ -58,10 +67,10 @@ function App() {
             path="dashboard"
             element={<DashboardPage />}
           />
-          <Route
-            path="invoices"
-            element={<CreateInvoice />} 
-          />
+          <Route path="invoices">
+            <Route index element={<InvoicesPage />} />
+            <Route path="new" element={<CreateInvoice />} />
+          </Route>
           <Route
             path="customers"
             element={

@@ -1,7 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useLocation } from "react-router-dom";
 import { getPayments, savePayments, getInvoices, saveInvoices, getCustomers } from "../../services/storage";
-import dummyInvoices from "../../data/dummyInvoices";
 
 function PaymentForm({ onPaymentAdded }) {
   const location = useLocation();
@@ -10,23 +9,13 @@ function PaymentForm({ onPaymentAdded }) {
   const [method, setMethod] = useState("Cash");
   const [date, setDate] = useState("");
   const [error, setError] = useState("");
-  const [allInvoices, setAllInvoices] = useState([]);
-  const [customers, setCustomers] = useState([]);
-
-  useEffect(() => {
+  const [allInvoices] = useState(() => {
     const savedInvoices = getInvoices();
-    const savedCustomers = getCustomers();
     const savedPayments = getPayments();
+    const uniqueInvoices = Array.from(new Map(savedInvoices.map(item => [item.id, item])).values());
     
-    const combined = [...dummyInvoices, ...savedInvoices];
-    // Deduplicate by ID to prevent React key collision if localStorage has duplicates
-    const uniqueInvoices = Array.from(new Map(combined.map(item => [item.id, item])).values());
-    
-    // Filter out fully paid invoices so they don't appear in the dropdown
-    const unpaidInvoices = uniqueInvoices.filter(invoice => {
+    return uniqueInvoices.filter(invoice => {
       if (invoice.status === "PAID") return false;
-      
-      // Calculate exact paid amount just to be 100% bulletproof
       let totalPaid = 0;
       for (let i = 0; i < savedPayments.length; i++) {
         if (savedPayments[i].invoiceId === invoice.id) {
@@ -35,10 +24,10 @@ function PaymentForm({ onPaymentAdded }) {
       }
       return totalPaid < invoice.total;
     });
+  });
+  const [customers] = useState(() => getCustomers());
 
-    setAllInvoices(unpaidInvoices);
-    setCustomers(savedCustomers);
-  }, []);
+
 
   function handleSubmit(event) {
     event.preventDefault();
@@ -137,7 +126,7 @@ function PaymentForm({ onPaymentAdded }) {
         >
           <option value="">-- Select an invoice --</option>
           {allInvoices.map((invoice) => {
-            const customer = customers.find(c => c.id === invoice.customerId);
+            const customer = customers.find(c => String(c.id) === String(invoice.customerId));
             const custName = invoice.customerName || (customer ? customer.name : "Unknown");
             return (
               <option key={invoice.id} value={invoice.id}>
