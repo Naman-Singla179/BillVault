@@ -1,0 +1,256 @@
+
+:root {
+  
+  --font-display: "Manrope", "Segoe UI", sans-serif;
+  --font-body: "Inter", "Segoe UI", sans-serif;
+
+  
+  --sidebar-width: 232px;
+  --navbar-height: 60px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: rgb(14, 16, 21);
+  color: rgb(233, 234, 238);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  margin: 0;
+  color: rgb(233, 234, 238);
+}
+
+p {
+  margin: 0;
+  color: rgb(154, 161, 175);
+}
+
+a {
+  color: inherit;
+}
+
+button {
+  font-family: var(--font-body);
+}
+
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid rgb(217, 164, 65);
+  outline-offset: 2px;
+}
+
+
+
+.page {
+  padding: 28px 32px 48px;
+  width: 100%;
+}
+
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.page-header h1 {
+  font-size: 24px;
+  letter-spacing: -0.01em;
+}
+
+.page-header p {
+  margin-top: 4px;
+  font-size: 14px;
+}
+
+.card {
+  background: rgb(25, 29, 38);
+  border: 1px solid rgb(38, 43, 54);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 9px 16px;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.btn-primary {
+  background: rgb(217, 164, 65);
+  color: rgb(26, 19, 5);
+}
+
+.btn-primary:hover {
+  background: rgb(230, 182, 88);
+}
+
+.btn-secondary {
+  background: transparent;
+  border-color: rgb(51, 57, 71);
+  color: rgb(233, 234, 238);
+}
+
+.btn-secondary:hover {
+  background: rgb(32, 36, 47);
+}
+
+.btn-danger {
+  background: transparent;
+  border-color: rgb(229, 72, 77);
+  color: rgb(229, 72, 77);
+}
+
+.btn-danger:hover {
+  background: rgba(229, 72, 77, 0.12);
+}
+
+.btn-icon {
+  padding: 7px;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  border: 1px solid rgb(51, 57, 71);
+  color: rgb(154, 161, 175);
+}
+
+.btn-icon:hover {
+  background: rgb(32, 36, 47);
+  color: rgb(233, 234, 238);
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.form-field label {
+  font-size: 13px;
+  font-weight: 600;
+  color: rgb(154, 161, 175);
+}
+
+.form-field input,
+.form-field select,
+.form-field textarea {
+  background: rgb(20, 23, 30);
+  border: 1px solid rgb(51, 57, 71);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  font-size: 14px;
+  color: rgb(233, 234, 238);
+  font-family: var(--font-body);
+}
+
+.form-field input::placeholder,
+.form-field textarea::placeholder {
+  color: rgb(107, 114, 128);
+}
+
+.form-field .required {
+  color: rgb(217, 164, 65);
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.form-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.badge-success {
+  background: rgba(63, 182, 127, 0.12);
+  color: rgb(63, 182, 127);
+}
+
+.badge-warning {
+  background: rgba(217, 164, 65, 0.12);
+  color: rgb(217, 164, 65);
+}
+
+.badge-danger {
+  background: rgba(229, 72, 77, 0.12);
+  color: rgb(229, 72, 77);
+}
+
+.badge-muted {
+  background: rgb(32, 36, 47);
+  color: rgb(154, 161, 175);
+}
+
+.empty-state {
+  text-align: center;
+  padding: 56px 24px;
+  color: rgb(154, 161, 175);
+}
+
+.empty-state h3 {
+  font-size: 16px;
+  margin-bottom: 6px;
+  color: rgb(233, 234, 238);
+}
+
+.empty-state p {
+  font-size: 14px;
+}
+
+@media (max-width: 768px) {
+  .page {
+    padding: 20px 16px 40px;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+}
