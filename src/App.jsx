@@ -12,6 +12,8 @@ import NotFoundPage from './pages/NotFoundPage'
 import LandingPage from './pages/LandingPage'
 import './styles/global.css'
 
+import CreateInvoice from './pages/Invoices/CreateInvoice';
+import Payments from './pages/Payments/Payments';
 
 const INITIAL_CUSTOMERS = [
   {
@@ -58,7 +60,7 @@ function App() {
           />
           <Route
             path="invoices"
-            element={<PlaceholderPage title="Invoices" description="Create and manage invoices" />}
+            element={<CreateInvoice />} 
           />
           <Route
             path="customers"
@@ -83,7 +85,7 @@ function App() {
           />
           <Route
             path="payments"
-            element={<PlaceholderPage title="Payments" description="Track payments and dues" />}
+            element={<Payments />}
           />
           <Route
             path="business-profile"
@@ -97,4 +99,4 @@ function App() {
   )
 }
 
-export default App
+export default App;
