@@ -10,7 +10,6 @@ function LandingPage() {
     <div className="landing-page">
       <header className="landing-header">
         <div className="landing-logo">
-          {/* Fallback logo since specific asset not found in reference */}
           <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#D9A441" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <rect x="2" y="6" width="20" height="12" rx="2" />
             <path d="M6 12h.01M10 12h.01M14 12h.01M18 12h.01" />
