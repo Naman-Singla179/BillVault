@@ -1,12 +1,16 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { getCustomers, getInvoices, saveInvoices } from '../../services/storage';
 
 export default function CreateInvoice() {
+  const navigate = useNavigate();
   const [customers, setCustomers] = useState([]);
+  
   const [invoice, setInvoice] = useState({
     id: `INV-${Date.now()}`,
     customerId: '', 
     date: '',
+    dueDate: '', // <-- New field for Member 3's logic
     items: [{ id: Date.now(), description: '', quantity: 1, price: 0 }],
     subtotal: 0,
     tax: 0,
@@ -45,24 +49,51 @@ export default function CreateInvoice() {
 
   const handleSave = () => {
     if (!invoice.customerId) return alert("Select a customer!");
+    if (!invoice.date) return alert("Select an invoice date!");
+    if (!invoice.dueDate) return alert("Select a due date!"); 
+    
     const existing = getInvoices();
     saveInvoices([...existing, invoice]);
     alert("Invoice Saved!");
+    navigate('/invoices'); 
   };
 
   return (
     <div className="create-invoice" style={{ padding: '20px', maxWidth: '800px' }}>
       <h2>Create Invoice</h2>
       
-      <div style={{ marginBottom: '20px' }}>
-        <label>Select Customer: </label>
-        <select 
-          value={invoice.customerId} 
-          onChange={(e) => setInvoice({...invoice, customerId: e.target.value})}
-        >
-          <option value="">-- Choose Customer --</option>
-          {customers.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-        </select>
+      <div style={{ display: 'flex', gap: '20px', marginBottom: '20px' }}>
+        <div>
+          <label style={{ display: 'block', marginBottom: '5px' }}>Select Customer: </label>
+          <select 
+            value={invoice.customerId} 
+            onChange={(e) => setInvoice({...invoice, customerId: e.target.value})}
+            style={{ padding: '5px' }}
+          >
+            <option value="">-- Choose Customer --</option>
+            {customers.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+          </select>
+        </div>
+        
+        <div>
+          <label style={{ display: 'block', marginBottom: '5px' }}>Invoice Date: </label>
+          <input 
+            type="date" 
+            value={invoice.date}
+            onChange={(e) => setInvoice({...invoice, date: e.target.value})}
+            style={{ padding: '5px' }}
+          />
+        </div>
+
+        <div>
+          <label style={{ display: 'block', marginBottom: '5px' }}>Due Date: </label>
+          <input 
+            type="date" 
+            value={invoice.dueDate}
+            onChange={(e) => setInvoice({...invoice, dueDate: e.target.value})}
+            style={{ padding: '5px' }}
+          />
+        </div>
       </div>
 
       <h3>Line Items</h3>
@@ -84,19 +115,20 @@ export default function CreateInvoice() {
       ))}
       <button onClick={addItemRow}>+ Add Item</button>
 
-      {/* 3. Totals Display */}
-      <div className="totals-display" style={{ marginTop: '20px', borderTop: '1px solid #ccc' }}>
+      <div className="totals-display" style={{ marginTop: '20px', borderTop: '1px solid #ccc', paddingTop: '10px' }}>
         <p>Subtotal: ₹{invoice.subtotal.toFixed(2)}</p>
         <p>
-          Tax (%): <input type="number" value={invoice.tax} onChange={e => setInvoice({...invoice, tax: e.target.value})} />
+          Tax (%): <input type="number" value={invoice.tax} onChange={e => setInvoice({...invoice, tax: e.target.value})} style={{ width: '60px' }}/>
         </p>
         <p>
-          Discount (₹): <input type="number" value={invoice.discount} onChange={e => setInvoice({...invoice, discount: e.target.value})} />
+          Discount (₹): <input type="number" value={invoice.discount} onChange={e => setInvoice({...invoice, discount: e.target.value})} style={{ width: '80px' }}/>
         </p>
         <h3>Total: ₹{invoice.total.toFixed(2)}</h3>
       </div>
       
-      <button onClick={handleSave} style={{ background: 'green', color: 'white', padding: '10px' }}>Save Invoice</button>
+      <button onClick={handleSave} style={{ background: 'green', color: 'white', padding: '10px 20px', marginTop: '20px', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
+        Save Invoice
+      </button>
     </div>
   );
 }
