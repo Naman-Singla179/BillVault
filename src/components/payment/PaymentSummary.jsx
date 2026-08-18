@@ -2,6 +2,7 @@
 
 import { calculateTotalPaid, calculateRemaining, calculatePaymentStatus } from '../../utils/paymentUtils';
 import dummyInvoices from '../../data/dummyInvoices';
+import { getInvoices } from '../../services/storage';
 
 function PaymentSummary({ payments }) {
   let totalRevenue = 0;
@@ -9,8 +10,12 @@ function PaymentSummary({ payments }) {
   let pendingPayments = 0;
   let overdueAmount = 0;
 
-  for (let i = 0; i < dummyInvoices.length; i++) {
-    const invoice = dummyInvoices[i];
+  const savedInvoices = getInvoices();
+  const combined = [...dummyInvoices, ...savedInvoices];
+  const uniqueInvoices = Array.from(new Map(combined.map(item => [item.id, item])).values());
+
+  for (let i = 0; i < uniqueInvoices.length; i++) {
+    const invoice = uniqueInvoices[i];
     const totalPaid = calculateTotalPaid(payments, invoice.id);
     const remaining = calculateRemaining(invoice.total, totalPaid);
     const status = calculatePaymentStatus(invoice, totalPaid);

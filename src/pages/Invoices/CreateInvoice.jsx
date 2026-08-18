@@ -53,9 +53,14 @@ export default function CreateInvoice() {
     if (!invoice.dueDate) return alert("Select a due date!"); 
     
     const existing = getInvoices();
-    saveInvoices([...existing, invoice]);
+    const isDuplicate = existing.some(inv => inv.id === invoice.id);
+    
+    if (!isDuplicate) {
+      saveInvoices([...existing, invoice]);
+    }
+    
     alert("Invoice Saved!");
-    navigate('/invoices'); 
+    navigate('/payment', { state: { invoiceId: invoice.id, amount: invoice.total } });
   };
 
   return (

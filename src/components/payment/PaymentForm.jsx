@@ -1,13 +1,44 @@
-import { useState } from "react";
-import { getPayments, savePayments } from "../../services/storage";
+import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
+import { getPayments, savePayments, getInvoices, saveInvoices, getCustomers } from "../../services/storage";
 import dummyInvoices from "../../data/dummyInvoices";
 
 function PaymentForm({ onPaymentAdded }) {
-  const [selectedInvoice, setSelectedInvoice] = useState("");
-  const [amount, setAmount] = useState("");
+  const location = useLocation();
+  const [selectedInvoice, setSelectedInvoice] = useState(location.state?.invoiceId || "");
+  const [amount, setAmount] = useState(location.state?.amount || "");
   const [method, setMethod] = useState("Cash");
   const [date, setDate] = useState("");
   const [error, setError] = useState("");
+  const [allInvoices, setAllInvoices] = useState([]);
+  const [customers, setCustomers] = useState([]);
+
+  useEffect(() => {
+    const savedInvoices = getInvoices();
+    const savedCustomers = getCustomers();
+    const savedPayments = getPayments();
+    
+    const combined = [...dummyInvoices, ...savedInvoices];
+    // Deduplicate by ID to prevent React key collision if localStorage has duplicates
+    const uniqueInvoices = Array.from(new Map(combined.map(item => [item.id, item])).values());
+    
+    // Filter out fully paid invoices so they don't appear in the dropdown
+    const unpaidInvoices = uniqueInvoices.filter(invoice => {
+      if (invoice.status === "PAID") return false;
+      
+      // Calculate exact paid amount just to be 100% bulletproof
+      let totalPaid = 0;
+      for (let i = 0; i < savedPayments.length; i++) {
+        if (savedPayments[i].invoiceId === invoice.id) {
+          totalPaid += savedPayments[i].amount;
+        }
+      }
+      return totalPaid < invoice.total;
+    });
+
+    setAllInvoices(unpaidInvoices);
+    setCustomers(savedCustomers);
+  }, []);
 
   function handleSubmit(event) {
     event.preventDefault();
@@ -25,7 +56,7 @@ function PaymentForm({ onPaymentAdded }) {
       return;
     }
 
-    const invoice = dummyInvoices.find((inv) => inv.id === selectedInvoice);
+    const invoice = allInvoices.find((inv) => inv.id === selectedInvoice);
     const existingPayments = getPayments();
 
     let alreadyPaid = 0;
@@ -58,6 +89,26 @@ function PaymentForm({ onPaymentAdded }) {
     const updatedPayments = [...existingPayments, newPayment];
     savePayments(updatedPayments);
 
+    // Update the invoice status based on new payments
+    const savedInvoices = getInvoices();
+    const invoiceIndex = savedInvoices.findIndex(inv => inv.id === selectedInvoice);
+    const invoiceToUpdate = { ...invoice };
+    const newTotalPaid = alreadyPaid + numericAmount;
+
+    // Strict status calculation based on total payments
+    if (newTotalPaid === invoiceToUpdate.total) {
+      invoiceToUpdate.status = "PAID";
+    } else if (newTotalPaid < invoiceToUpdate.total) {
+      invoiceToUpdate.status = "PARTIALLY PAID";
+    }
+
+    if (invoiceIndex !== -1) {
+      savedInvoices[invoiceIndex] = invoiceToUpdate;
+      saveInvoices(savedInvoices);
+    } else {
+      saveInvoices([...savedInvoices, invoiceToUpdate]);
+    }
+
     setSelectedInvoice("");
     setAmount("");
     setMethod("Cash");
@@ -85,11 +136,15 @@ function PaymentForm({ onPaymentAdded }) {
           onChange={(e) => setSelectedInvoice(e.target.value)}
         >
           <option value="">-- Select an invoice --</option>
-          {dummyInvoices.map((invoice) => (
-            <option key={invoice.id} value={invoice.id}>
-              {invoice.id} - {invoice.customerName} - ₹{invoice.total}
-            </option>
-          ))}
+          {allInvoices.map((invoice) => {
+            const customer = customers.find(c => c.id === invoice.customerId);
+            const custName = invoice.customerName || (customer ? customer.name : "Unknown");
+            return (
+              <option key={invoice.id} value={invoice.id}>
+                {invoice.id} - {custName} - ₹{invoice.total}
+              </option>
+            );
+          })}
         </select>
       </div>
 
