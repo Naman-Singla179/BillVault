@@ -15,7 +15,8 @@ function DashboardPage({ profile }) {
     pending: 0,
     overdue: 0
   })
-  const [recentInvoices, setRecentInvoices] = useState([])
+  const [allInvoices, setAllInvoices] = useState([])
+  const [showAllInvoices, setShowAllInvoices] = useState(false)
   const [customers, setCustomers] = useState([])
 
   useEffect(() => {
@@ -53,9 +54,9 @@ function DashboardPage({ profile }) {
       overdue: overdueAmount
     })
 
-    // Sort invoices and get top 5
-    const sorted = [...uniqueInvoices].reverse().slice(0, 5)
-    setRecentInvoices(sorted)
+    // Sort invoices
+    const sorted = [...uniqueInvoices].reverse()
+    setAllInvoices(sorted)
     setCustomers(savedCustomers)
   }, [])
 
@@ -120,13 +121,15 @@ function DashboardPage({ profile }) {
 
         <section className="dashboard-recent">
           <div className="dashboard-recent-header">
-            <h2>Recent Invoices</h2>
-            <button className="btn-link" onClick={() => navigate('/invoices')}>
-              View All →
-            </button>
+            <h2>{showAllInvoices ? "All Transactions" : "Recent Transactions"}</h2>
+            {allInvoices.length > 5 && (
+              <button className="btn-link" onClick={() => setShowAllInvoices(!showAllInvoices)}>
+                {showAllInvoices ? "Show Less ←" : "View All →"}
+              </button>
+            )}
           </div>
 
-          {recentInvoices.length > 0 ? (
+          {allInvoices.length > 0 ? (
             <div className="card" style={{ padding: 0, overflowX: 'auto' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '600px' }}>
                 <thead>
@@ -139,10 +142,10 @@ function DashboardPage({ profile }) {
                   </tr>
                 </thead>
                 <tbody>
-                  {recentInvoices.map((inv, index) => {
+                  {(showAllInvoices ? allInvoices : allInvoices.slice(0, 5)).map((inv, index, arr) => {
                     const customer = customers.find(c => c.id === inv.customerId);
                     const custName = customer ? customer.name : (inv.customerName || inv.customerId || "Unknown");
-                    const isLast = index === recentInvoices.length - 1;
+                    const isLast = index === arr.length - 1;
 
                     const displayStatus = inv.status || 'PENDING';
                     let statusColor = '#E9484D';
