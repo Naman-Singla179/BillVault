@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { getCustomers, saveCustomers, getBusiness, saveBusiness } from './services/storage'
 import PageLayout from './components/layout/PageLayout'
 import DashboardPage from './pages/DashboardPage'
 import PlaceholderPage from './pages/PlaceholderPage'
@@ -15,26 +16,24 @@ import Payments from './pages/Payments/Payments'
 import './styles/global.css'
 
 
-const INITIAL_CUSTOMERS = [
-  {
-    id: 1,
-    name: 'Ravi Kumar',
-    email: 'ravi@example.com',
-    phone: '91234 56789',
-    address: '221 Model Town, Patiala, Punjab',
-  },
-  {
-    id: 2,
-    name: 'Anita Sharma',
-    email: 'anita.sharma@example.com',
-    phone: '98765 12340',
-    address: 'Sector 14, Chandigarh',
-  },
-]
+const INITIAL_CUSTOMERS = [];
 
 function App() {
-  const [customers, setCustomers] = useState(INITIAL_CUSTOMERS)
-  const [businessProfile, setBusinessProfile] = useState(null)
+  const [customers, setCustomers] = useState(() => {
+    const saved = getCustomers();
+    return saved.length > 0 ? saved : INITIAL_CUSTOMERS;
+  });
+  const [businessProfile, setBusinessProfile] = useState(() => getBusiness())
+
+  useEffect(() => {
+    saveCustomers(customers);
+  }, [customers]);
+
+  useEffect(() => {
+    if (businessProfile && Object.keys(businessProfile).length > 0) {
+      saveBusiness(businessProfile);
+    }
+  }, [businessProfile]);
 
   function addCustomer(data) {
     const newCustomer = { id: Date.now(), ...data }
@@ -53,14 +52,14 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<LandingPage />} />
-        <Route element={<PageLayout />}>
+        <Route element={<PageLayout profile={businessProfile} />}>
           <Route
             path="dashboard"
-            element={<DashboardPage />}
+            element={<DashboardPage profile={businessProfile} />}
           />
           <Route
             path="invoices"
-            element={<CreateInvoice />}
+            element={<CreateInvoice customers={customers} onAddCustomer={addCustomer} />}
           />
           <Route
             path="customers"

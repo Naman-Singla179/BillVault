@@ -79,10 +79,11 @@ function BusinessProfileForm({ initialData, onSave }) {
         </div>
 
         <div className="form-field">
-          <label htmlFor="business-email">Email</label>
+          <label htmlFor="business-email">Email <span className="required">*</span></label>
           <input
             id="business-email"
             type="email"
+            required
             value={form.email}
             onChange={(e) => handleChange('email', e.target.value)}
             placeholder="e.g. billing@sharmatraders.com"
@@ -92,10 +93,11 @@ function BusinessProfileForm({ initialData, onSave }) {
 
       <div className="form-row">
         <div className="form-field">
-          <label htmlFor="business-phone">Phone</label>
+          <label htmlFor="business-phone">Phone <span className="required">*</span></label>
           <input
             id="business-phone"
             type="tel"
+            required
             value={form.phone}
             onChange={(e) => handleChange('phone', e.target.value)}
             placeholder="e.g. 98765 43210"
@@ -103,10 +105,11 @@ function BusinessProfileForm({ initialData, onSave }) {
         </div>
 
         <div className="form-field">
-          <label htmlFor="business-gstin">GSTIN</label>
+          <label htmlFor="business-gstin">GSTIN <span className="required">*</span></label>
           <input
             id="business-gstin"
             type="text"
+            required
             value={form.gstin}
             onChange={(e) => handleChange('gstin', e.target.value)}
             placeholder="e.g. 22AAAAA0000A1Z5"
@@ -115,10 +118,11 @@ function BusinessProfileForm({ initialData, onSave }) {
       </div>
 
       <div className="form-field">
-        <label htmlFor="business-address">Address</label>
+        <label htmlFor="business-address">Address <span className="required">*</span></label>
         <textarea
           id="business-address"
           rows="3"
+          required
           value={form.address}
           onChange={(e) => handleChange('address', e.target.value)}
           placeholder="Shop / street, city, state, PIN"
@@ -126,10 +130,11 @@ function BusinessProfileForm({ initialData, onSave }) {
       </div>
 
       <div className="form-field">
-        <label htmlFor="business-upi">UPI ID</label>
+        <label htmlFor="business-upi">UPI ID <span className="required">*</span></label>
         <input
           id="business-upi"
           type="text"
+          required
           value={form.upiId}
           onChange={(e) => handleChange('upiId', e.target.value)}
           placeholder="e.g. sharmatraders@upi"

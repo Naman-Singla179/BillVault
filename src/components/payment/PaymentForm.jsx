@@ -129,23 +129,34 @@ function PaymentForm({ onPaymentAdded }) {
         </p>
       )}
 
-      <div className="form-field">
-        <label>Invoice</label>
-        <select
-          value={selectedInvoice}
-          onChange={(e) => setSelectedInvoice(e.target.value)}
-        >
-          <option value="">-- Select an invoice --</option>
-          {allInvoices.map((invoice) => {
-            const customer = customers.find(c => c.id === invoice.customerId);
-            const custName = invoice.customerName || (customer ? customer.name : "Unknown");
-            return (
-              <option key={invoice.id} value={invoice.id}>
-                {invoice.id} - {custName} - ₹{invoice.total}
-              </option>
-            );
-          })}
-        </select>
+      <div className="form-row">
+        <div className="form-field">
+          <label>Invoice</label>
+          <select
+            value={selectedInvoice}
+            onChange={(e) => setSelectedInvoice(e.target.value)}
+          >
+            <option value="">-- Select an invoice --</option>
+            {allInvoices.map((invoice) => {
+              const customer = customers.find(c => c.id === invoice.customerId);
+              const custName = customer ? customer.name : (invoice.customerName || invoice.customerId || "Unknown");
+              return (
+                <option key={invoice.id} value={invoice.id}>
+                  {invoice.id} - {custName} - ₹{invoice.total}
+                </option>
+              );
+            })}
+          </select>
+        </div>
+
+        <div className="form-field">
+          <label>Payment Date</label>
+          <input
+            type="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+          />
+        </div>
       </div>
 
       <div className="form-row">
@@ -168,15 +179,6 @@ function PaymentForm({ onPaymentAdded }) {
             <option value="Bank Transfer">Bank Transfer</option>
           </select>
         </div>
-      </div>
-
-      <div className="form-field">
-        <label>Payment Date</label>
-        <input
-          type="date"
-          value={date}
-          onChange={(e) => setDate(e.target.value)}
-        />
       </div>
 
       <div className="form-actions">

@@ -1,9 +1,12 @@
 import { calculateTotalPaid, calculatePaymentStatus } from '../../utils/paymentUtils';
 import dummyInvoices from '../../data/dummyInvoices';
+import { getInvoices } from '../../services/storage';
 import PaymentStatus from './PaymentStatus';
 
 function PaymentCard({ payment, allPayments }) {
-  const invoice = dummyInvoices.find((inv) => inv.id === payment.invoiceId);
+  const allSavedInvoices = getInvoices();
+  const combined = [...dummyInvoices, ...allSavedInvoices];
+  const invoice = combined.find((inv) => inv.id === payment.invoiceId);
   const totalPaid = calculateTotalPaid(allPayments, payment.invoiceId);
   const status = calculatePaymentStatus(invoice, totalPaid);
 

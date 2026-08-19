@@ -71,6 +71,8 @@ textarea:focus-visible {
 .page {
   padding: 28px 32px 48px;
   width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .page-header {
