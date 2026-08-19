@@ -42,3 +42,12 @@ export function calculatePaymentStatus(invoice, totalPaid) {
 
   return "PENDING";
 }
+
+export function formatInvoiceId(id) {
+  if (!id) return '';
+  const match = String(id).match(/^INV-(\d+)$/);
+  if (match) {
+    return `INV-${match[1].padStart(4, '0')}`;
+  }
+  return id;
+}

@@ -1,4 +1,4 @@
-// src/components/payment/PaymentStatus.jsx
+import React from 'react';
 
 function PaymentStatus({ status }) {
   const colors = {

@@ -1,4 +1,5 @@
 import { NavLink, Link } from 'react-router-dom'
+import { LogOut } from 'lucide-react'
 import './Navbar.css'
 
 const NAV_ITEMS = [
@@ -8,7 +9,10 @@ const NAV_ITEMS = [
   { to: '/payments', label: 'Payments' },
 ]
 
-function Navbar() {
+function Navbar({ title, profile }) {
+  const bizName = profile?.name || "My Business";
+  const bizInitials = bizName.substring(0, 2).toUpperCase();
+
   return (
     <header className="navbar">
       <div className="navbar-left">
@@ -31,15 +35,21 @@ function Navbar() {
         </nav>
       </div>
 
-      <Link to="/business-profile" className="navbar-right navbar-business-link">
-        <div className="navbar-business">
-          <span className="navbar-business-name">My Business</span>
-          <span className="navbar-business-sub">Free plan</span>
-        </div>
-        <div className="navbar-avatar" aria-hidden="true">
-          MB
-        </div>
-      </Link>
+      <div className="navbar-right" style={{ display: 'flex', alignItems: 'center' }}>
+        <Link to="/business-profile" className="navbar-business-link">
+          <div className="navbar-avatar" aria-hidden="true">
+            {bizInitials}
+          </div>
+          <div className="navbar-business">
+            <span className="navbar-business-name">{bizName}</span>
+            <span className="navbar-business-sub">Free plan</span>
+          </div>
+        </Link>
+        
+        <Link to="/" className="btn-icon" title="Sign Out" style={{ marginLeft: '12px', display: 'flex' }}>
+          <LogOut size={20} />
+        </Link>
+      </div>
     </header>
   )
 }

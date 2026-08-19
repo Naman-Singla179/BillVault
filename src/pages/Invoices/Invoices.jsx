@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getInvoices, getCustomers } from '../../services/storage'; 
+import { formatInvoiceId } from '../../utils/paymentUtils'; 
 
 export default function Invoices() {
   const navigate = useNavigate();
@@ -8,7 +9,7 @@ export default function Invoices() {
   const [customers] = useState(() => getCustomers()); 
 
   const getCustomerName = (id) => {
-    const customer = customers.find(c => c.id === id || c.id === Number(id));
+    const customer = customers.find(c => String(c.id) === String(id));
     return customer ? customer.name : 'Unknown Customer';
   };
 
@@ -39,7 +40,7 @@ export default function Invoices() {
           ) : (
             invoices.map(inv => (
               <tr key={inv.id} style={{ borderBottom: '1px solid #ddd' }}>
-                <td style={{ padding: '10px 0' }}>{inv.id}</td>
+                <td style={{ padding: '10px 0' }}>{formatInvoiceId(inv.id)}</td>
                 <td>{getCustomerName(inv.customerId)}</td> 
                 <td>{inv.date}</td>
                 <td>₹{inv.total.toFixed(2)}</td>

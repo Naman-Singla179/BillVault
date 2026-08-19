@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { getCustomers, saveCustomers, getBusiness, saveBusiness } from './services/storage'
 import PageLayout from './components/layout/PageLayout'
 import DashboardPage from './pages/DashboardPage'
 
@@ -9,41 +10,29 @@ import CustomerDetailsPage from './pages/CustomerDetailsPage'
 import BusinessProfilePage from './pages/BusinessProfilePage'
 import InvoicePreviewPage from './pages/InvoicePreviewPage'
 import NotFoundPage from './pages/NotFoundPage'
-import LandingPage from './pages/LandingPage'
+import CreateInvoice from './pages/Invoices/CreateInvoice'
+import Payments from './pages/Payments/Payments'
 import './styles/global.css'
 
-import CreateInvoice from './pages/Invoices/CreateInvoice';
-import InvoicesPage from './pages/Invoices/Invoices';
-import Payments from './pages/Payments/Payments';
-import { getCustomers, saveCustomers } from './services/storage';
 
-const INITIAL_CUSTOMERS = [
-  {
-    id: 1,
-    name: 'Ravi Kumar',
-    email: 'ravi@example.com',
-    phone: '91234 56789',
-    address: '221 Model Town, Patiala, Punjab',
-  },
-  {
-    id: 2,
-    name: 'Anita Sharma',
-    email: 'anita.sharma@example.com',
-    phone: '98765 12340',
-    address: 'Sector 14, Chandigarh',
-  },
-]
+const INITIAL_CUSTOMERS = [];
 
 function App() {
   const [customers, setCustomers] = useState(() => {
     const saved = getCustomers();
-    return saved && saved.length > 0 ? saved : INITIAL_CUSTOMERS;
+    return saved.length > 0 ? saved : INITIAL_CUSTOMERS;
   });
-  const [businessProfile, setBusinessProfile] = useState(null)
+  const [businessProfile, setBusinessProfile] = useState(() => getBusiness())
 
   useEffect(() => {
     saveCustomers(customers);
   }, [customers]);
+
+  useEffect(() => {
+    if (businessProfile && Object.keys(businessProfile).length > 0) {
+      saveBusiness(businessProfile);
+    }
+  }, [businessProfile]);
 
   function addCustomer(data) {
     const newCustomer = { id: Date.now(), ...data }
@@ -61,16 +50,16 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<LandingPage />} />
-        <Route element={<PageLayout />}>
+        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+        <Route element={<PageLayout profile={businessProfile} />}>
           <Route
             path="dashboard"
-            element={<DashboardPage />}
+            element={<DashboardPage profile={businessProfile} />}
           />
-          <Route path="invoices">
-            <Route index element={<InvoicesPage />} />
-            <Route path="new" element={<CreateInvoice />} />
-          </Route>
+          <Route
+            path="invoices"
+            element={<CreateInvoice customers={customers} onAddCustomer={addCustomer} />}
+          />
           <Route
             path="customers"
             element={
@@ -108,4 +97,4 @@ function App() {
   )
 }
 
-export default App;
+export default App

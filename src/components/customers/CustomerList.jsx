@@ -1,24 +1,48 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { getInvoices, getPayments } from '../../services/storage'
+import { calculateTotalPaid, calculatePaymentStatus } from '../../utils/paymentUtils'
 import './CustomerList.css'
 
 function CustomerList({ customers, onEdit, onDelete }) {
   const [query, setQuery] = useState('')
   const navigate = useNavigate()
 
+  const invoices = getInvoices()
+  const payments = getPayments()
+
   const filtered = customers.filter((c) => {
     const term = query.trim().toLowerCase()
     if (!term) return true
     return (
       c.name.toLowerCase().includes(term) ||
-      c.email.toLowerCase().includes(term) ||
-      c.phone.toLowerCase().includes(term)
+      (c.email && c.email.toLowerCase().includes(term)) ||
+      (c.phone && c.phone.toLowerCase().includes(term))
     )
   })
 
   function handleDelete(customer) {
     const confirmed = window.confirm(`Delete customer "${customer.name}"?`)
     if (confirmed) onDelete(customer.id)
+  }
+
+  function getCustomerStatus(customer) {
+    const custInvoices = invoices.filter(i => String(i.customerId) === String(customer.id) || i.customerId === customer.name);
+    if (custInvoices.length === 0) return { label: 'NO INVOICES', class: 'badge-muted' };
+
+    let hasOverdue = false;
+    let hasPending = false;
+
+    custInvoices.forEach(inv => {
+      const totalPaid = calculateTotalPaid(payments, inv.id);
+      const status = calculatePaymentStatus(inv, totalPaid);
+      if (status === 'OVERDUE') hasOverdue = true;
+      if (status === 'PENDING' || status === 'PARTIALLY PAID') hasPending = true;
+    });
+
+    if (hasOverdue) return { label: 'OVERDUE', class: 'badge-danger' };
+    if (hasPending) return { label: 'PENDING', class: 'badge-warning' };
+    return { label: 'PAID', class: 'badge-success' };
   }
 
   return (
@@ -51,6 +75,7 @@ function CustomerList({ customers, onEdit, onDelete }) {
                 <th>Email</th>
                 <th>Phone</th>
                 <th>Address</th>
+                <th>Status</th>
                 <th className="customer-table-actions-col">Actions</th>
               </tr>
             </thead>
@@ -59,8 +84,13 @@ function CustomerList({ customers, onEdit, onDelete }) {
                 <tr key={customer.id}>
                   <td data-label="Name">{customer.name}</td>
                   <td data-label="Email">{customer.email || '—'}</td>
-                  <td data-label="Phone">{customer.phone}</td>
+                  <td data-label="Phone">{customer.phone || '—'}</td>
                   <td data-label="Address">{customer.address || '—'}</td>
+                  <td data-label="Status">
+                    <span className={`badge ${getCustomerStatus(customer).class}`}>
+                      {getCustomerStatus(customer).label}
+                    </span>
+                  </td>
                   <td data-label="Actions">
                     <div className="customer-table-actions">
                       <button

@@ -1,5 +1,3 @@
-// src/components/payment/PaymentHistory.jsx
-
 import PaymentCard from './PaymentCard';
 
 function PaymentHistory({ payments }) {

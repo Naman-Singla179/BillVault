@@ -17,13 +17,13 @@ function getTitle(pathname) {
   return found ? found.title : 'BillVault'
 }
 
-function PageLayout() {
+function PageLayout({ profile }) {
   const location = useLocation()
 
   return (
     <div className="app-shell">
       <div className="app-shell-main">
-        <Navbar title={getTitle(location.pathname)} />
+        <Navbar title={getTitle(location.pathname)} profile={profile} />
         <main className="app-shell-content">
           <Outlet />
         </main>

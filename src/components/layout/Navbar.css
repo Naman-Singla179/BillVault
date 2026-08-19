@@ -82,9 +82,12 @@
   text-decoration: none;
   color: inherit;
   cursor: pointer;
-  padding: 4px 8px;
+  padding: 6px 12px;
   border-radius: var(--radius-sm);
   transition: background-color 0.15s ease;
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .navbar-business-link:hover {
@@ -94,7 +97,7 @@
 .navbar-business {
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
+  align-items: flex-start;
   line-height: 1.3;
 }
 

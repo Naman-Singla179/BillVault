@@ -1,6 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { getPayments, savePayments, getInvoices, saveInvoices, getCustomers } from "../../services/storage";
+import { formatInvoiceId } from "../../utils/paymentUtils";
+
 
 function PaymentForm({ onPaymentAdded }) {
   const location = useLocation();
@@ -9,25 +11,26 @@ function PaymentForm({ onPaymentAdded }) {
   const [method, setMethod] = useState("Cash");
   const [date, setDate] = useState("");
   const [error, setError] = useState("");
-  const [allInvoices] = useState(() => {
+  const [allInvoices, setAllInvoices] = useState([]);
+  const [customers, setCustomers] = useState([]);
+  const [payments, setPayments] = useState([]);
+
+  function loadData() {
     const savedInvoices = getInvoices();
+    const savedCustomers = getCustomers();
     const savedPayments = getPayments();
-    const uniqueInvoices = Array.from(new Map(savedInvoices.map(item => [item.id, item])).values());
-    
-    return uniqueInvoices.filter(invoice => {
-      if (invoice.status === "PAID") return false;
-      let totalPaid = 0;
-      for (let i = 0; i < savedPayments.length; i++) {
-        if (savedPayments[i].invoiceId === invoice.id) {
-          totalPaid += savedPayments[i].amount;
-        }
-      }
-      return totalPaid < invoice.total;
-    });
-  });
-  const [customers] = useState(() => getCustomers());
 
+    const combined = [...savedInvoices];
+    const uniqueInvoices = Array.from(new Map(combined.map(item => [item.id, item])).values());
 
+    setAllInvoices(uniqueInvoices);
+    setCustomers(savedCustomers);
+    setPayments(savedPayments);
+  }
+
+  useEffect(() => {
+    loadData();
+  }, []);
 
   function handleSubmit(event) {
     event.preventDefault();
@@ -78,13 +81,11 @@ function PaymentForm({ onPaymentAdded }) {
     const updatedPayments = [...existingPayments, newPayment];
     savePayments(updatedPayments);
 
-    // Update the invoice status based on new payments
     const savedInvoices = getInvoices();
     const invoiceIndex = savedInvoices.findIndex(inv => inv.id === selectedInvoice);
     const invoiceToUpdate = { ...invoice };
     const newTotalPaid = alreadyPaid + numericAmount;
 
-    // Strict status calculation based on total payments
     if (newTotalPaid === invoiceToUpdate.total) {
       invoiceToUpdate.status = "PAID";
     } else if (newTotalPaid < invoiceToUpdate.total) {
@@ -103,6 +104,8 @@ function PaymentForm({ onPaymentAdded }) {
     setMethod("Cash");
     setDate("");
 
+    loadData();
+
     if (onPaymentAdded) {
       onPaymentAdded();
     }
@@ -118,23 +121,43 @@ function PaymentForm({ onPaymentAdded }) {
         </p>
       )}
 
-      <div className="form-field">
-        <label>Invoice</label>
-        <select
-          value={selectedInvoice}
-          onChange={(e) => setSelectedInvoice(e.target.value)}
-        >
-          <option value="">-- Select an invoice --</option>
-          {allInvoices.map((invoice) => {
-            const customer = customers.find(c => String(c.id) === String(invoice.customerId));
-            const custName = invoice.customerName || (customer ? customer.name : "Unknown");
-            return (
-              <option key={invoice.id} value={invoice.id}>
-                {invoice.id} - {custName} - ₹{invoice.total}
-              </option>
-            );
-          })}
-        </select>
+      <div className="form-row">
+        <div className="form-field">
+          <label>Invoice</label>
+          <select
+            value={selectedInvoice}
+            onChange={(e) => setSelectedInvoice(e.target.value)}
+          >
+            <option value="">-- Select an invoice --</option>
+            {allInvoices.map((invoice) => {
+              const customer = customers.find(c => String(c.id) === String(invoice.customerId));
+              const custName = customer ? customer.name : (invoice.customerName || invoice.customerId || "Unknown");
+              
+              let alreadyPaid = 0;
+              payments.forEach(p => {
+                if (p.invoiceId === invoice.id) alreadyPaid += Number(p.amount);
+              });
+              const remaining = Number(invoice.total) - alreadyPaid;
+              
+              if (remaining <= 0) return null;
+
+              return (
+                <option key={invoice.id} value={invoice.id}>
+                  {formatInvoiceId(invoice.id)} - {custName} - ₹{remaining.toFixed(2)} remaining
+                </option>
+              );
+            })}
+          </select>
+        </div>
+
+        <div className="form-field">
+          <label>Payment Date</label>
+          <input
+            type="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+          />
+        </div>
       </div>
 
       <div className="form-row">
@@ -157,15 +180,6 @@ function PaymentForm({ onPaymentAdded }) {
             <option value="Bank Transfer">Bank Transfer</option>
           </select>
         </div>
-      </div>
-
-      <div className="form-field">
-        <label>Payment Date</label>
-        <input
-          type="date"
-          value={date}
-          onChange={(e) => setDate(e.target.value)}
-        />
       </div>
 
       <div className="form-actions">

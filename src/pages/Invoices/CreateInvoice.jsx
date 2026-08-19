@@ -1,162 +1,257 @@
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { getInvoices, saveInvoices } from '../../services/storage';
 
-import { getCustomers, getInvoices, saveInvoices } from '../../services/storage';
+export default function CreateInvoice({ customers = [], onAddCustomer }) {
+  const navigate = useNavigate();
 
-export default function CreateInvoice() {
-  const [customers] = useState(() => getCustomers());
-
-  const generateNewInvoiceId = () => {
+  const [invoice, setInvoice] = useState(() => {
     const existing = getInvoices();
-    let maxId = 0;
-    for (const inv of existing) {
-      if (inv.id && String(inv.id).startsWith('INV-')) {
-        const numStr = String(inv.id).replace('INV-', '');
-        const num = parseInt(numStr, 10);
-        if (!isNaN(num) && num > maxId) {
-          maxId = num;
-        }
+    let maxNum = 0;
+    existing.forEach(inv => {
+      const match = String(inv.id).match(/^INV-(\d+)$/);
+      if (match) {
+        const num = parseInt(match[1], 10);
+        if (num > maxNum) maxNum = num;
       }
-    }
-    return `INV-${maxId + 1}`;
-  };
-
-  const getInitialInvoiceState = () => ({
-    id: generateNewInvoiceId(),
+    });
+    const nextId = `INV-${String(maxNum + 1).padStart(4, '0')}`;
+    
+    return {
+      id: nextId,
     customerId: '',
+    customerPhone: '',
+    customerEmail: '',
+    customerAddress: '',
     date: '',
     dueDate: '',
-    items: [{ id: crypto.randomUUID(), description: '', quantity: 1, price: 0 }],
+    items: [{ id: Date.now(), description: '', quantity: 1, price: 0 }],
     subtotal: 0,
     tax: 0,
     discount: 0,
     total: 0,
     status: 'PENDING'
+    };
   });
 
-  const [invoice, setInvoice] = useState(getInitialInvoiceState);
+  useEffect(() => {
+    const newSubtotal = invoice.items.reduce((sum, item) => {
+      return sum + (Number(item.quantity) * Number(item.price));
+    }, 0);
 
-  const subtotal = invoice.items.reduce((sum, item) => {
-    return sum + (Number(item.quantity) * Number(item.price));
-  }, 0);
+    const taxAmount = newSubtotal * (Number(invoice.tax) / 100);
+    const newTotal = newSubtotal + taxAmount - Number(invoice.discount);
 
-  const taxAmount = subtotal * (Number(invoice.tax) / 100);
-  const total = subtotal + taxAmount - Number(invoice.discount);
+    setInvoice(prev => ({ ...prev, subtotal: newSubtotal, total: newTotal }));
+  }, [invoice.items, invoice.tax, invoice.discount]);
+
+  const handleCustomerChange = (e) => {
+    const name = e.target.value;
+    const existingCustomer = customers.find(c => c.name === name || String(c.id) === String(name));
+    
+    if (existingCustomer) {
+      setInvoice(prev => ({
+        ...prev,
+        customerId: name,
+        customerPhone: existingCustomer.phone || '',
+        customerEmail: existingCustomer.email || '',
+        customerAddress: existingCustomer.address || ''
+      }));
+    } else {
+      setInvoice(prev => ({ ...prev, customerId: name }));
+    }
+  };
 
   const handleItemChange = (index, field, value) => {
-    setInvoice(prev => {
-      const newItems = [...prev.items];
-      newItems[index] = { ...newItems[index], [field]: value };
-      return { ...prev, items: newItems };
-    });
+    const newItems = [...invoice.items];
+    newItems[index][field] = value;
+    setInvoice(prev => ({ ...prev, items: newItems }));
   };
 
   const addItemRow = () => {
     setInvoice(prev => ({
       ...prev,
-      items: [...prev.items, { id: crypto.randomUUID(), description: '', quantity: 1, price: 0 }]
+      items: [...prev.items, { id: Date.now(), description: '', quantity: 1, price: 0 }]
     }));
   };
 
   const handleSave = () => {
-    if (!invoice.customerId) return alert("Select a customer!");
+    if (!invoice.customerId) return alert("Enter or select a customer!");
     if (!invoice.date) return alert("Select an invoice date!");
     if (!invoice.dueDate) return alert("Select a due date!");
-
-    const invoiceToSave = {
-      ...invoice,
-      subtotal,
-      total
-    };
 
     const existing = getInvoices();
     const isDuplicate = existing.some(inv => inv.id === invoice.id);
 
     if (!isDuplicate) {
-      saveInvoices([...existing, invoiceToSave]);
+      saveInvoices([...existing, invoice]);
+    }
+
+    if (onAddCustomer && invoice.customerId) {
+      const existingCustomer = customers.find(
+        c => String(c.id) === String(invoice.customerId) || c.name.toLowerCase() === invoice.customerId.toLowerCase()
+      );
+      if (!existingCustomer) {
+        onAddCustomer({ 
+          name: invoice.customerId, 
+          email: invoice.customerEmail, 
+          phone: invoice.customerPhone, 
+          address: invoice.customerAddress 
+        });
+      }
     }
 
     alert("Invoice Saved!");
-    setInvoice(getInitialInvoiceState());
+    navigate('/payments', { state: { invoiceId: invoice.id, amount: invoice.total } });
   };
 
   return (
-    <div className="create-invoice" style={{ padding: '20px', maxWidth: '800px' }}>
-      <h2>Create Invoice</h2>
-
-      <div style={{ display: 'flex', gap: '20px', marginBottom: '20px' }}>
+    <div className="page">
+      <div className="page-header">
         <div>
-          <label style={{ display: 'block', marginBottom: '5px' }}>Select Customer: </label>
-          <select
-            value={invoice.customerId}
-            onChange={(e) => setInvoice(prev => ({ ...prev, customerId: e.target.value }))}
-            style={{ padding: '5px' }}
-          >
-            <option value="">-- Choose Customer --</option>
-            {customers.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-          </select>
-        </div>
-
-        <div>
-          <label style={{ display: 'block', marginBottom: '5px' }}>Invoice Date: </label>
-          <input
-            type="date"
-            value={invoice.date}
-            onChange={(e) => setInvoice(prev => ({ ...prev, date: e.target.value }))}
-            style={{ padding: '5px' }}
-          />
-        </div>
-
-        <div>
-          <label style={{ display: 'block', marginBottom: '5px' }}>Due Date: </label>
-          <input
-            type="date"
-            value={invoice.dueDate}
-            onChange={(e) => setInvoice(prev => ({ ...prev, dueDate: e.target.value }))}
-            style={{ padding: '5px' }}
-          />
+          <h1>Create Invoice</h1>
+          <p>Fill out the details below to generate a new invoice.</p>
         </div>
       </div>
 
-      <div style={{ display: 'flex', gap: '10px', marginBottom: '5px', fontWeight: 'bold' }}>
-        <div style={{ flex: 1, minWidth: '150px' }}>Description</div>
-        <div style={{ width: '80px' }}>Quantity</div>
-        <div style={{ width: '100px' }}>Price (₹)</div>
-      </div>
-      {invoice.items.map((item, index) => (
-        <div key={item.id} style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
-          <input
-            type="text" placeholder="Description" value={item.description}
-            onChange={(e) => handleItemChange(index, 'description', e.target.value)}
-            style={{ flex: 1, minWidth: '150px', padding: '5px' }}
-          />
-          <input
-            type="number" min="1" placeholder="Qty" value={item.quantity}
-            onChange={(e) => handleItemChange(index, 'quantity', e.target.value)}
-            style={{ width: '80px', padding: '5px' }}
-          />
-          <input
-            type="number" min="0" placeholder="Price" value={item.price}
-            onChange={(e) => handleItemChange(index, 'price', e.target.value)}
-            style={{ width: '100px', padding: '5px' }}
-          />
+      <div className="card" style={{ padding: '24px' }}>
+        
+        <div className="form-row" style={{ marginBottom: '16px' }}>
+          <div className="form-field">
+            <label>Customer Name</label>
+            <input
+              list="customer-list"
+              value={invoice.customerId}
+              onChange={handleCustomerChange}
+              placeholder="Enter or select customer"
+            />
+            <datalist id="customer-list">
+              {customers.map(c => <option key={c.id} value={c.name} />)}
+            </datalist>
+          </div>
+          <div className="form-field">
+            <label>Phone Number</label>
+            <input
+              type="tel"
+              value={invoice.customerPhone}
+              onChange={(e) => setInvoice({ ...invoice, customerPhone: e.target.value })}
+              placeholder="Phone Number"
+            />
+          </div>
         </div>
-      ))}
-      <button onClick={addItemRow}>+ Add Item</button>
 
-      <div className="totals-display" style={{ marginTop: '20px', borderTop: '1px solid #ccc', paddingTop: '10px' }}>
-        <p>Subtotal: ₹{subtotal.toFixed(2)}</p>
-        <p>
-          Tax (%): <input type="number" value={invoice.tax} onChange={e => setInvoice(prev => ({ ...prev, tax: e.target.value }))} style={{ width: '60px' }} />
-        </p>
-        <p>
-          Discount (₹): <input type="number" value={invoice.discount} onChange={e => setInvoice(prev => ({ ...prev, discount: e.target.value }))} style={{ width: '80px' }} />
-        </p>
-        <h3>Total: ₹{total.toFixed(2)}</h3>
+        <div className="form-row" style={{ marginBottom: '16px' }}>
+          <div className="form-field">
+            <label>Email</label>
+            <input
+              type="email"
+              value={invoice.customerEmail}
+              onChange={(e) => setInvoice({ ...invoice, customerEmail: e.target.value })}
+              placeholder="Email Address"
+            />
+          </div>
+          <div className="form-field">
+            <label>Address</label>
+            <input
+              type="text"
+              value={invoice.customerAddress}
+              onChange={(e) => setInvoice({ ...invoice, customerAddress: e.target.value })}
+              placeholder="Physical Address"
+            />
+          </div>
+        </div>
+
+        <div className="form-row" style={{ marginBottom: '24px' }}>
+          <div className="form-field">
+            <label>Invoice Date</label>
+            <input
+              type="date"
+              value={invoice.date}
+              onChange={(e) => setInvoice({ ...invoice, date: e.target.value })}
+            />
+          </div>
+          <div className="form-field">
+            <label>Due Date</label>
+            <input
+              type="date"
+              value={invoice.dueDate}
+              onChange={(e) => setInvoice({ ...invoice, dueDate: e.target.value })}
+            />
+          </div>
+        </div>
+
+        <h3 style={{ marginBottom: '16px', borderBottom: '1px solid rgb(38, 43, 54)', paddingBottom: '8px' }}>Item Description</h3>
+
+        {invoice.items.map((item, index) => (
+          <div key={item.id} className="form-row" style={{ gridTemplateColumns: '2fr 1fr 1fr', marginBottom: '12px' }}>
+            <div className="form-field" style={{ marginBottom: 0 }}>
+              {index === 0 && <label>Item Description</label>}
+              <input
+                type="text" placeholder="Item Description" value={item.description}
+                onChange={(e) => handleItemChange(index, 'description', e.target.value)}
+              />
+            </div>
+            <div className="form-field" style={{ marginBottom: 0 }}>
+              {index === 0 && <label>Quantity</label>}
+              <input
+                type="number" min="1" placeholder="Qty" value={item.quantity}
+                onChange={(e) => handleItemChange(index, 'quantity', e.target.value)}
+              />
+            </div>
+            <div className="form-field" style={{ marginBottom: 0 }}>
+              {index === 0 && <label>Price (₹)</label>}
+              <input
+                type="number" min="0" placeholder="Price" value={item.price}
+                onChange={(e) => handleItemChange(index, 'price', e.target.value)}
+              />
+            </div>
+          </div>
+        ))}
+
+        <button className="btn btn-secondary" onClick={addItemRow} style={{ marginBottom: '24px', marginTop: '4px' }}>
+          + Add Item
+        </button>
+
+        <div style={{ background: 'rgb(20, 23, 30)', padding: '16px', borderRadius: '6px', border: '1px solid rgb(51, 57, 71)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '24px' }}>
+
+            <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', alignItems: 'center' }}>
+              
+              <div className="form-field" style={{ marginBottom: 0, width: '120px' }}>
+                <label>Subtotal (₹)</label>
+                <input type="text" value={invoice.subtotal.toFixed(2)} readOnly />
+              </div>
+
+              <span style={{ fontSize: '20px', color: 'rgb(107, 114, 128)', marginTop: '18px', fontWeight: 'bold' }}>+</span>
+
+              <div className="form-field" style={{ marginBottom: 0, width: '120px' }}>
+                <label>Tax (%)</label>
+                <input type="number" min="0" value={invoice.tax} onChange={e => setInvoice({ ...invoice, tax: e.target.value })} />
+              </div>
+
+              <span style={{ fontSize: '20px', color: 'rgb(107, 114, 128)', marginTop: '18px', fontWeight: 'bold' }}>-</span>
+
+              <div className="form-field" style={{ marginBottom: 0, width: '120px' }}>
+                <label>Discount (₹)</label>
+                <input type="number" min="0" value={invoice.discount} onChange={e => setInvoice({ ...invoice, discount: e.target.value })} />
+              </div>
+
+              <span style={{ fontSize: '20px', color: 'rgb(107, 114, 128)', marginTop: '18px', fontWeight: 'bold' }}>=</span>
+
+            </div>
+
+            <div style={{ display: 'flex', gap: '32px', alignItems: 'center', flexWrap: 'wrap' }}>
+              <div style={{ textAlign: 'right', minWidth: '150px' }}>
+                <h2 style={{ color: 'rgb(63, 182, 127)', margin: 0 }}>Total: ₹{invoice.total.toFixed(2)}</h2>
+              </div>
+              <button className="btn btn-primary" onClick={handleSave} style={{ padding: '12px 24px', fontSize: '15px' }}>
+                Save Invoice
+              </button>
+            </div>
+
+          </div>
+        </div>
       </div>
-
-      <button onClick={handleSave} style={{ background: 'green', color: 'white', padding: '10px 20px', marginTop: '20px', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
-        Save Invoice
-      </button>
     </div>
   );
 }

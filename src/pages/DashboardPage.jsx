@@ -1,65 +1,93 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { IndianRupee, FileText, Clock, AlertCircle } from 'lucide-react'
 import { getInvoices, getPayments, getCustomers } from '../services/storage'
-import { calculateTotalPaid, calculateRemaining, calculatePaymentStatus } from '../utils/paymentUtils'
+import { calculateTotalPaid, calculateRemaining, calculatePaymentStatus, formatInvoiceId } from '../utils/paymentUtils'
+
 import './DashboardPage.css'
 
-function DashboardPage() {
+function DashboardPage({ profile }) {
   const navigate = useNavigate()
-  const [invoices] = useState(() => getInvoices())
-  const [payments] = useState(() => getPayments())
-  const [customers] = useState(() => getCustomers())
 
-  let totalBilled = 0;
-  let totalPaid = 0;
-  let totalPending = 0;
-  let overdueAmount = 0;
+  const [stats, setStats] = useState({
+    revenue: 0,
+    billed: 0,
+    pending: 0,
+    overdue: 0
+  })
+  const [allInvoices, setAllInvoices] = useState([])
+  const [showAllInvoices, setShowAllInvoices] = useState(false)
+  const [customers, setCustomers] = useState([])
 
-  invoices.forEach(inv => {
-    const invTotalPaid = calculateTotalPaid(payments, inv.id);
-    const status = calculatePaymentStatus(inv, invTotalPaid);
-    const remaining = calculateRemaining(Number(inv.total), invTotalPaid);
-    
-    totalBilled += Number(inv.total);
-    totalPaid += invTotalPaid;
+  useEffect(() => {
+    const savedInvoices = getInvoices()
+    const payments = getPayments()
+    const savedCustomers = getCustomers()
+    const combined = [...savedInvoices]
+    const uniqueInvoices = Array.from(new Map(combined.map(item => [item.id, item])).values())
 
-    if (status === "OVERDUE") {
-      overdueAmount += remaining;
-    } else if (status !== "PAID") {
-      totalPending += remaining;
+    let totalRevenue = 0
+    let totalBilled = 0
+    let pendingPayments = 0
+    let overdueAmount = 0
+
+    for (let i = 0; i < uniqueInvoices.length; i++) {
+      const invoice = uniqueInvoices[i]
+      const totalPaid = calculateTotalPaid(payments, invoice.id)
+      const remaining = calculateRemaining(invoice.total, totalPaid)
+      const status = calculatePaymentStatus(invoice, totalPaid)
+
+      totalRevenue += totalPaid
+      totalBilled += invoice.total
+
+      if (status === "OVERDUE") {
+        overdueAmount += remaining
+      } else {
+        pendingPayments += remaining
+      }
     }
-  });
 
-  const summaryCards = [
+    setStats({
+      revenue: totalRevenue,
+      billed: totalBilled,
+      pending: pendingPayments,
+      overdue: overdueAmount
+    })
+
+    const sorted = [...uniqueInvoices].reverse()
+    setAllInvoices(sorted)
+    setCustomers(savedCustomers)
+  }, [])
+
+  const SUMMARY_CARDS = [
     {
       id: 'revenue',
       title: 'Total Revenue',
-      value: `₹${totalPaid.toFixed(2)}`,
+      value: `₹${stats.revenue}`,
       icon: <IndianRupee size={20} />,
     },
     {
       id: 'billed',
       title: 'Total Billed',
-      value: `₹${totalBilled.toFixed(2)}`,
+      value: `₹${stats.billed}`,
       icon: <FileText size={20} />,
     },
     {
       id: 'pending',
       title: 'Pending Payments',
-      value: `₹${totalPending.toFixed(2)}`,
+      value: `₹${stats.pending}`,
       icon: <Clock size={20} />,
     },
     {
       id: 'overdue',
       title: 'Overdue Amount',
-      value: `₹${overdueAmount.toFixed(2)}`,
+      value: `₹${stats.overdue}`,
       isWarning: true,
       icon: <AlertCircle size={20} />,
     },
   ]
 
-  const recentInvoices = [...invoices].reverse().slice(0, 5)
+  const bizName = profile?.name || "Business Owner";
 
   return (
     <div className="dashboard-page">
@@ -68,18 +96,18 @@ function DashboardPage() {
       <div className="dashboard-content">
         <header className="dashboard-header">
           <div>
-            <h1 className="dashboard-greeting">Good afternoon,<br />Business Owner</h1>
+            <h1 className="dashboard-greeting">Good afternoon,<br />{bizName}</h1>
             <p className="dashboard-subtitle">Here's your business overview.</p>
           </div>
           <div className="dashboard-header-actions">
-            <button className="btn btn-primary" onClick={() => navigate('/invoices/new')}>
+            <button className="btn btn-primary" onClick={() => navigate('/invoices')}>
               + Create Invoice
             </button>
           </div>
         </header>
 
         <section className="dashboard-summary-cards">
-          {summaryCards.map((card) => (
+          {SUMMARY_CARDS.map((card) => (
             <div key={card.id} className={`dashboard-card ${card.isWarning ? 'dashboard-card-warning' : ''}`}>
               <div className="dashboard-card-icon" aria-hidden="true">
                 {card.icon}
@@ -92,47 +120,46 @@ function DashboardPage() {
 
         <section className="dashboard-recent">
           <div className="dashboard-recent-header">
-            <h2>Recent Invoices</h2>
-            <button className="btn-link" onClick={() => navigate('/invoices')}>
-              View All →
-            </button>
+            <h2>{showAllInvoices ? "All Transactions" : "Recent Transactions"}</h2>
+            {allInvoices.length > 5 && (
+              <button className="btn-link" onClick={() => setShowAllInvoices(!showAllInvoices)}>
+                {showAllInvoices ? "Show Less ←" : "View More →"}
+              </button>
+            )}
           </div>
 
-          {recentInvoices.length > 0 ? (
-            <div className="card" style={{ padding: '20px', overflowX: 'auto' }}>
-              <table style={{ width: '100%', textAlign: 'left', borderCollapse: 'collapse' }}>
+          {allInvoices.length > 0 ? (
+            <div className="card" style={{ padding: 0, overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '600px' }}>
                 <thead>
-                  <tr style={{ borderBottom: '1px solid #eee' }}>
-                    <th style={{ padding: '10px' }}>ID</th>
-                    <th style={{ padding: '10px' }}>Customer</th>
-                    <th style={{ padding: '10px' }}>Date</th>
-                    <th style={{ padding: '10px' }}>Total</th>
-                    <th style={{ padding: '10px' }}>Status</th>
+                  <tr style={{ borderBottom: '1px solid rgb(51, 57, 71)' }}>
+                    <th style={{ padding: '16px 20px', color: 'rgb(233, 234, 238)', fontSize: '14px', fontWeight: 600 }}>ID</th>
+                    <th style={{ padding: '16px 20px', color: 'rgb(233, 234, 238)', fontSize: '14px', fontWeight: 600 }}>Customer</th>
+                    <th style={{ padding: '16px 20px', color: 'rgb(233, 234, 238)', fontSize: '14px', fontWeight: 600 }}>Date</th>
+                    <th style={{ padding: '16px 20px', color: 'rgb(233, 234, 238)', fontSize: '14px', fontWeight: 600 }}>Total</th>
+                    <th style={{ padding: '16px 20px', color: 'rgb(233, 234, 238)', fontSize: '14px', fontWeight: 600 }}>Status</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {recentInvoices.map(inv => {
-                    const customer = customers.find(c => c.id === inv.customerId || c.id === Number(inv.customerId));
-                    const invTotalPaid = calculateTotalPaid(payments, inv.id);
-                    const status = calculatePaymentStatus(inv, invTotalPaid);
-                    
+                  {(showAllInvoices ? allInvoices : allInvoices.slice(0, 5)).map((inv, index, arr) => {
+                    const customer = customers.find(c => String(c.id) === String(inv.customerId));
+                    const custName = customer ? customer.name : (inv.customerName || inv.customerId || "Unknown");
+                    const isLast = index === arr.length - 1;
+
+                    const displayStatus = inv.status || 'PENDING';
+                    let statusColor = '#E9484D';
+                    if (displayStatus === 'PAID') statusColor = 'rgb(63, 182, 127)';
+                    if (displayStatus === 'PENDING') statusColor = 'rgb(245, 166, 35)';
+
                     return (
-                      <tr key={inv.id} style={{ borderBottom: '1px solid #eee' }}>
-                        <td style={{ padding: '10px' }}>{inv.id}</td>
-                        <td style={{ padding: '10px' }}>{customer ? customer.name : 'Unknown'}</td>
-                        <td style={{ padding: '10px' }}>{inv.date}</td>
-                        <td style={{ padding: '10px' }}>₹{Number(inv.total).toFixed(2)}</td>
-                        <td style={{ 
-                          padding: '10px', 
-                          color: status === 'PENDING' ? 'orange' : 
-                                 status === 'PAID' ? 'green' : 
-                                 status === 'OVERDUE' ? 'rgb(229, 72, 77)' : 'inherit',
-                          fontWeight: '500'
-                        }}>
-                          {status}
-                        </td>
+                      <tr key={inv.id} style={{ borderBottom: isLast ? 'none' : '1px solid rgb(51, 57, 71)' }}>
+                        <td style={{ padding: '16px 20px', color: 'rgb(233, 234, 238)' }}>{formatInvoiceId(inv.id)}</td>
+                        <td style={{ padding: '16px 20px', color: 'rgb(233, 234, 238)' }}>{custName}</td>
+                        <td style={{ padding: '16px 20px', color: 'rgb(233, 234, 238)' }}>{inv.date || '—'}</td>
+                        <td style={{ padding: '16px 20px', color: 'rgb(233, 234, 238)' }}>₹{Number(inv.total).toFixed(2)}</td>
+                        <td style={{ padding: '16px 20px', color: statusColor, fontWeight: 600 }}>{displayStatus}</td>
                       </tr>
-                    );
+                    )
                   })}
                 </tbody>
               </table>
@@ -144,7 +171,7 @@ function DashboardPage() {
               </div>
               <h3>No invoices yet</h3>
               <p>Create your first invoice to see it here.</p>
-              <button className="btn btn-primary" onClick={() => navigate('/invoices/new')}>
+              <button className="btn btn-primary" onClick={() => navigate('/invoices')}>
                 Create Invoice
               </button>
             </div>

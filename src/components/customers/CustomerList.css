@@ -45,15 +45,16 @@
   border-bottom: none;
 }
 
-.customer-table-actions-col {
-  text-align: right;
+.customer-table th.customer-table-actions-col {
+  text-align: center;
+  width: 1%;
 }
 
 .customer-table-actions {
   display: flex;
   gap: 6px;
-  justify-content: flex-end;
-  flex-wrap: wrap;
+  justify-content: flex-start;
+  flex-wrap: nowrap;
 }
 
 @media (max-width: 720px) {

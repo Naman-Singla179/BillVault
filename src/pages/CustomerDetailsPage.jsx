@@ -92,7 +92,7 @@ function CustomerDetailsPage({ customers, onUpdate, onDelete }) {
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px', marginTop: '16px' }}>
                   <div style={{ padding: '16px', background: '#f5f5f5', borderRadius: '8px' }}>
                     <p style={{ margin: 0, fontSize: '0.9rem', color: '#666' }}>Total Billed</p>
-                    <h2 style={{ margin: '8px 0 0 0', fontSize: '1.5rem' }}>₹{totalBilled.toFixed(2)}</h2>
+                    <h2 style={{ margin: '8px 0 0 0', fontSize: '1.5rem', color: '#000' }}>₹{totalBilled.toFixed(2)}</h2>
                   </div>
                   <div style={{ padding: '16px', background: '#f5f5f5', borderRadius: '8px' }}>
                     <p style={{ margin: 0, fontSize: '0.9rem', color: '#666' }}>Amount Paid</p>
@@ -100,7 +100,7 @@ function CustomerDetailsPage({ customers, onUpdate, onDelete }) {
                   </div>
                   <div style={{ padding: '16px', background: outstandingBalance > 0 ? '#fff0f0' : '#f5f5f5', borderRadius: '8px' }}>
                     <p style={{ margin: 0, fontSize: '0.9rem', color: '#666' }}>Outstanding Balance</p>
-                    <h2 style={{ margin: '8px 0 0 0', fontSize: '1.5rem', color: outstandingBalance > 0 ? 'red' : 'inherit' }}>₹{outstandingBalance.toFixed(2)}</h2>
+                    <h2 style={{ margin: '8px 0 0 0', fontSize: '1.5rem', color: outstandingBalance > 0 ? 'red' : '#000' }}>₹{outstandingBalance.toFixed(2)}</h2>
                   </div>
                 </div>
               );

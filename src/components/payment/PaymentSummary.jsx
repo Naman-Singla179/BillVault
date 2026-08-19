@@ -1,5 +1,4 @@
-// src/components/payment/PaymentSummary.jsx
-
+import React from "react";
 import { calculateTotalPaid, calculateRemaining, calculatePaymentStatus } from '../../utils/paymentUtils';
 import { getInvoices } from '../../services/storage';
 
