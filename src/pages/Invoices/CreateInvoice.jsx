@@ -5,6 +5,7 @@ import { getInvoices, saveInvoices } from '../../services/storage';
 export default function CreateInvoice({ customers = [], onAddCustomer }) {
   const navigate = useNavigate();
 
+  const [selectedRowId, setSelectedRowId] = useState(null);
   const [invoice, setInvoice] = useState(() => {
     const existing = getInvoices();
     let maxNum = 0;
@@ -73,6 +74,22 @@ export default function CreateInvoice({ customers = [], onAddCustomer }) {
       ...prev,
       items: [...prev.items, { id: Date.now(), description: '', quantity: 1, price: 0 }]
     }));
+  };
+
+  const removeSelectedItem = () => {
+    if (invoice.items.length > 1) {
+      setInvoice(prev => {
+        let newItems;
+        if (selectedRowId) {
+          newItems = prev.items.filter(item => item.id !== selectedRowId);
+          if (newItems.length === 0) newItems = prev.items;
+        } else {
+          newItems = prev.items.slice(0, -1);
+        }
+        return { ...prev, items: newItems };
+      });
+      setSelectedRowId(null);
+    }
   };
 
   const handleSave = () => {
@@ -183,7 +200,18 @@ export default function CreateInvoice({ customers = [], onAddCustomer }) {
         <h3 style={{ marginBottom: '16px', borderBottom: '1px solid rgb(38, 43, 54)', paddingBottom: '8px' }}>Item Description</h3>
 
         {invoice.items.map((item, index) => (
-          <div key={item.id} className="form-row" style={{ gridTemplateColumns: '2fr 1fr 1fr', marginBottom: '12px' }}>
+          <div 
+            key={item.id} 
+            className="form-row" 
+            onClick={() => setSelectedRowId(item.id)}
+            style={{ 
+              gridTemplateColumns: '2fr 1fr 1fr', 
+              marginBottom: '12px',
+              borderRadius: '4px',
+              padding: '4px',
+              cursor: 'pointer'
+            }}
+          >
             <div className="form-field" style={{ marginBottom: 0 }}>
               {index === 0 && <label>Item Description</label>}
               <input
@@ -208,9 +236,20 @@ export default function CreateInvoice({ customers = [], onAddCustomer }) {
           </div>
         ))}
 
-        <button className="btn btn-secondary" onClick={addItemRow} style={{ marginBottom: '24px', marginTop: '4px' }}>
-          + Add Item
-        </button>
+        <div style={{ display: 'flex', gap: '12px', marginBottom: '24px', marginTop: '4px' }}>
+          <button className="btn btn-secondary" onClick={addItemRow}>
+            + Add Item
+          </button>
+          {invoice.items.length > 1 && (
+            <button 
+              className="btn btn-secondary" 
+              onClick={removeSelectedItem} 
+              style={{ borderColor: 'rgb(229, 72, 77)', color: 'rgb(229, 72, 77)' }}
+            >
+              - Remove Item
+            </button>
+          )}
+        </div>
 
         <div style={{ background: 'rgb(20, 23, 30)', padding: '16px', borderRadius: '6px', border: '1px solid rgb(51, 57, 71)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '24px' }}>
