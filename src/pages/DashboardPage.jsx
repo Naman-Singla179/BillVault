@@ -64,24 +64,28 @@ function DashboardPage({ profile }) {
       id: 'revenue',
       title: 'Total Revenue',
       value: `₹${stats.revenue}`,
+      valueColor: 'rgb(63, 182, 127)',
       icon: <IndianRupee size={20} />,
     },
     {
       id: 'billed',
       title: 'Total Billed',
       value: `₹${stats.billed}`,
+      valueColor: 'rgb(233, 234, 238)',
       icon: <FileText size={20} />,
     },
     {
       id: 'pending',
       title: 'Pending Payments',
       value: `₹${stats.pending}`,
+      valueColor: 'rgb(217, 164, 65)',
       icon: <Clock size={20} />,
     },
     {
       id: 'overdue',
       title: 'Overdue Amount',
       value: `₹${stats.overdue}`,
+      valueColor: 'rgb(229, 72, 77)',
       isWarning: true,
       icon: <AlertCircle size={20} />,
     },
@@ -113,7 +117,7 @@ function DashboardPage({ profile }) {
                 {card.icon}
               </div>
               <h2 className="dashboard-card-title">{card.title}</h2>
-              <p className="dashboard-card-value">{card.value}</p>
+              <p className="dashboard-card-value" style={card.valueColor ? { color: card.valueColor } : {}}>{card.value}</p>
             </div>
           ))}
         </section>

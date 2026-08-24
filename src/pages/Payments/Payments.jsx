@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import PaymentForm from '../../components/payment/PaymentForm';
-import PaymentSummary from '../../components/payment/PaymentSummary';
 import { getPayments, getInvoices, getCustomers } from '../../services/storage';
 import { formatInvoiceId } from '../../utils/paymentUtils';
 
@@ -30,9 +29,6 @@ function Payments() {
           <p>Record and track your incoming payments.</p>
         </div>
       </div>
-
-      <PaymentSummary payments={payments} />
-
       <PaymentForm onPaymentAdded={loadPayments} />
 
       <section style={{ marginTop: '32px' }}>
