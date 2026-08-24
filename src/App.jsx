@@ -9,7 +9,6 @@ import CustomerDetailsPage from './pages/CustomerDetailsPage'
 
 import BusinessProfilePage from './pages/BusinessProfilePage'
 import InvoicePreviewPage from './pages/InvoicePreviewPage'
-import NotFoundPage from './pages/NotFoundPage'
 import CreateInvoice from './pages/Invoices/CreateInvoice'
 import Payments from './pages/Payments/Payments'
 import './styles/global.css'
@@ -90,7 +89,6 @@ function App() {
             element={<BusinessProfilePage profile={businessProfile} onSave={setBusinessProfile} />}
           />
           <Route path="invoice-preview" element={<InvoicePreviewPage />} />
-          <Route path="*" element={<NotFoundPage />} />
         </Route>
       </Routes>
     </BrowserRouter>
