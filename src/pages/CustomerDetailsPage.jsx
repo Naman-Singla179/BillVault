@@ -106,38 +106,7 @@ function CustomerDetailsPage({ customers, onUpdate, onDelete }) {
               );
             })()}
             
-            <div style={{ marginTop: '24px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <h4 style={{ marginBottom: '10px' }}>Recent Invoices</h4>
-                <Link to="/invoices/new" className="btn-link">Create Invoice</Link>
-              </div>
-              {(() => {
-                const customerInvoices = invoices.filter(inv => String(inv.customerId) === String(customer.id));
-                if (customerInvoices.length === 0) return <p style={{ color: '#666' }}>No invoices found.</p>;
-                return (
-                  <table style={{ width: '100%', textAlign: 'left', borderCollapse: 'collapse' }}>
-                    <thead>
-                      <tr style={{ borderBottom: '1px solid #ddd' }}>
-                        <th style={{ padding: '8px 4px' }}>ID</th>
-                        <th style={{ padding: '8px 4px' }}>Date</th>
-                        <th style={{ padding: '8px 4px' }}>Total</th>
-                        <th style={{ padding: '8px 4px' }}>Status</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {customerInvoices.reverse().slice(0, 5).map(inv => (
-                        <tr key={inv.id} style={{ borderBottom: '1px solid #f0f0f0' }}>
-                          <td style={{ padding: '8px 4px' }}>{inv.id}</td>
-                          <td style={{ padding: '8px 4px' }}>{inv.date}</td>
-                          <td style={{ padding: '8px 4px' }}>₹{Number(inv.total).toFixed(2)}</td>
-                          <td style={{ padding: '8px 4px', color: inv.status === 'PENDING' ? 'orange' : (inv.status === 'PAID' ? 'green' : 'inherit') }}>{inv.status}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                );
-              })()}
-            </div>
+
           </div>
         </div>
       )}
