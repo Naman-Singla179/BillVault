@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { getPayments, savePayments, getInvoices, saveInvoices, getCustomers } from "../../services/storage";
-import { formatInvoiceId } from "../../utils/paymentUtils";
+import { formatInvoiceId, calculateTotalPaid } from "../../utils/paymentUtils";
 
 
 function PaymentForm({ onPaymentAdded }) {
@@ -20,10 +20,7 @@ function PaymentForm({ onPaymentAdded }) {
     const savedCustomers = getCustomers();
     const savedPayments = getPayments();
 
-    const combined = [...savedInvoices];
-    const uniqueInvoices = Array.from(new Map(combined.map(item => [item.id, item])).values());
-
-    setAllInvoices(uniqueInvoices);
+    setAllInvoices(savedInvoices);
     setCustomers(savedCustomers);
     setPayments(savedPayments);
   }
@@ -51,12 +48,7 @@ function PaymentForm({ onPaymentAdded }) {
     const invoice = allInvoices.find((inv) => inv.id === selectedInvoice);
     const existingPayments = getPayments();
 
-    let alreadyPaid = 0;
-    for (let i = 0; i < existingPayments.length; i++) {
-      if (existingPayments[i].invoiceId === selectedInvoice) {
-        alreadyPaid += existingPayments[i].amount;
-      }
-    }
+    const alreadyPaid = calculateTotalPaid(existingPayments, selectedInvoice);
 
     const remaining = invoice.total - alreadyPaid;
 
@@ -116,7 +108,7 @@ function PaymentForm({ onPaymentAdded }) {
       <h2 style={{ marginBottom: "16px" }}>Record Payment</h2>
 
       {error && (
-        <p style={{ color: "rgb(229, 72, 77)", marginBottom: "12px" }}>
+        <p style={{ color: "red", marginBottom: "12px" }}>
           {error}
         </p>
       )}
@@ -133,10 +125,7 @@ function PaymentForm({ onPaymentAdded }) {
               const customer = customers.find(c => String(c.id) === String(invoice.customerId));
               const custName = customer ? customer.name : (invoice.customerName || invoice.customerId || "Unknown");
               
-              let alreadyPaid = 0;
-              payments.forEach(p => {
-                if (p.invoiceId === invoice.id) alreadyPaid += Number(p.amount);
-              });
+              const alreadyPaid = calculateTotalPaid(payments, invoice.id);
               const remaining = Number(invoice.total) - alreadyPaid;
               
               if (remaining <= 0) return null;

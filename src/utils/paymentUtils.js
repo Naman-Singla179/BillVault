@@ -1,23 +1,11 @@
 export function calculateTotalPaid(payments, invoiceId) {
-  let total = 0;
-
-  for (let i = 0; i < payments.length; i++) {
-    if (payments[i].invoiceId === invoiceId) {
-      total = total + payments[i].amount;
-    }
-  }
-
-  return total;
+  return payments.reduce((sum, payment) => {
+    return payment.invoiceId === invoiceId ? sum + payment.amount : sum;
+  }, 0);
 }
 
 export function calculateRemaining(invoiceTotal, totalPaid) {
-  let remaining = invoiceTotal - totalPaid;
-
-  if (remaining < 0) {
-    remaining = 0;
-  }
-
-  return remaining;
+  return Math.max(0, invoiceTotal - totalPaid);
 }
 
 export function isOverdue(invoice) {
