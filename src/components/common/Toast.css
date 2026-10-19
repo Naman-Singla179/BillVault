@@ -1,0 +1,69 @@
+/* src/components/common/Toast.css */
+
+.toast-container {
+  position: fixed;
+  top: calc(var(--navbar-height, 60px) + 16px);
+  right: 20px;
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 360px;
+  max-width: calc(100vw - 40px);
+}
+
+.toast {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  font-size: 14px;
+  animation: toast-in 0.18s ease-out;
+}
+
+/* two classes so these win over .card's border no matter which CSS loads first */
+.card.toast {
+  border-left-width: 4px;
+}
+
+.toast.toast-success {
+  border-left-color: rgb(63, 182, 127);
+}
+
+.toast.toast-error {
+  border-left-color: rgb(229, 72, 77);
+}
+
+.toast.toast-warning {
+  border-left-color: rgb(217, 164, 65);
+}
+
+.toast.toast-info {
+  border-left-color: rgb(107, 114, 128);
+}
+
+.toast-close {
+  background: none;
+  border: none;
+  color: inherit;
+  opacity: 0.7;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.toast-close:hover {
+  opacity: 1;
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}

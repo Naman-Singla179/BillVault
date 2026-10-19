@@ -2,10 +2,11 @@ import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { getPayments, savePayments, getInvoices, saveInvoices, getCustomers } from "../../services/storage";
 import { formatInvoiceId, calculateTotalPaid } from "../../utils/paymentUtils";
-
+import { useToast } from "../../context/ToastContext";
 
 function PaymentForm({ onPaymentAdded }) {
   const location = useLocation();
+  const toast = useToast();
   const [selectedInvoice, setSelectedInvoice] = useState(location.state?.invoiceId || "");
   const [amount, setAmount] = useState(location.state?.amount || "");
   const [method, setMethod] = useState("Cash");
@@ -72,6 +73,7 @@ function PaymentForm({ onPaymentAdded }) {
 
     const updatedPayments = [...existingPayments, newPayment];
     savePayments(updatedPayments);
+    toast.success("Payment recorded");
 
     const savedInvoices = getInvoices();
     const invoiceIndex = savedInvoices.findIndex(inv => inv.id === selectedInvoice);
@@ -176,6 +178,7 @@ function PaymentForm({ onPaymentAdded }) {
           Record Payment
         </button>
       </div>
+
     </form>
   );
 }
