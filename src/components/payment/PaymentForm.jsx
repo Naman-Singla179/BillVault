@@ -3,6 +3,7 @@ import { useLocation } from "react-router-dom";
 import { getPayments, savePayments, getInvoices, saveInvoices, getCustomers } from "../../services/storage";
 import { formatInvoiceId, calculateTotalPaid } from "../../utils/paymentUtils";
 import { useToast } from "../../context/ToastContext";
+import UpiQrCode from "./UpiQrCode";
 
 function PaymentForm({ onPaymentAdded }) {
   const location = useLocation();
@@ -105,6 +106,20 @@ function PaymentForm({ onPaymentAdded }) {
     }
   }
 
+  const currentInvoice = allInvoices.find((inv) => String(inv.id) === String(selectedInvoice));
+  const currentInvoicePaid = currentInvoice ? calculateTotalPaid(payments, currentInvoice.id) : 0;
+  const invoiceRemaining = currentInvoice ? Math.max(0, Number(currentInvoice.total) - currentInvoicePaid) : 0;
+
+  const enteredAmount = parseFloat(amount);
+  const isAmountWithinBalance =
+    amount !== "" &&
+    !isNaN(enteredAmount) &&
+    enteredAmount > 0 &&
+    enteredAmount <= invoiceRemaining;
+
+  const qrAmount = isAmountWithinBalance ? enteredAmount : invoiceRemaining;
+  const qrInvoiceId = currentInvoice ? formatInvoiceId(currentInvoice.id) : "";
+
   return (
     <form onSubmit={handleSubmit} className="card" style={{ padding: "24px" }}>
       <h2 style={{ marginBottom: "16px" }}>Record Payment</h2>
@@ -172,6 +187,29 @@ function PaymentForm({ onPaymentAdded }) {
           </select>
         </div>
       </div>
+
+      {selectedInvoice && currentInvoice && (
+        <div
+          className="payment-form-qr-section"
+          style={{
+            borderTop: "1px solid rgb(38, 43, 54)",
+            paddingTop: "16px",
+            marginBottom: "20px",
+          }}
+        >
+          <h4
+            style={{
+              fontSize: "14px",
+              fontWeight: "600",
+              marginBottom: "12px",
+              color: "rgb(154, 161, 175)",
+            }}
+          >
+            Scan to pay
+          </h4>
+          <UpiQrCode amount={qrAmount} invoiceId={qrInvoiceId} />
+        </div>
+      )}
 
       <div className="form-actions">
         <button type="submit" className="btn btn-primary">

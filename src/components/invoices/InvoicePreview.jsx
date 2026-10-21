@@ -1,10 +1,21 @@
 import './InvoicePreview.css'
+import UpiQrCode from '../payment/UpiQrCode'
+import { useApp } from '../../context/AppContext'
+import { calculateTotalPaid } from '../../utils/paymentUtils'
 
 
 function InvoicePreview({ business, customer, invoice, items }) {
+  const { payments } = useApp()
+
   function handlePrint() {
     window.print()
   }
+
+  const rawTotal = typeof invoice?.total === 'number'
+    ? invoice.total
+    : parseFloat(String(invoice?.total || '0').replace(/[^0-9.-]+/g, '')) || 0
+  const invoiceId = invoice?.id || invoice?.number || ''
+  const remaining = Math.max(0, rawTotal - calculateTotalPaid(payments, invoiceId))
 
   return (
     <div className="invoice-preview-wrap">
@@ -109,6 +120,7 @@ function InvoicePreview({ business, customer, invoice, items }) {
               ? invoice.paymentStatus.charAt(0).toUpperCase() + invoice.paymentStatus.slice(1)
               : 'Payment status pending'}
           </span>
+          {remaining > 0 && <UpiQrCode amount={remaining} invoiceId={invoiceId} />}
           {business?.upiId && <p className="invoice-preview-upi">Pay via UPI: {business.upiId}</p>}
         </footer>
       </div>
