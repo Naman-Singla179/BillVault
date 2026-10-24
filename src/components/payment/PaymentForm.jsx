@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import { getPayments, savePayments, getInvoices, saveInvoices, getCustomers } from "../../services/storage";
+import { getPayments, savePayments, getInvoices, getCustomers } from "../../services/storage";
 import { formatInvoiceId, calculateTotalPaid } from "../../utils/paymentUtils";
 import { useToast } from "../../context/ToastContext";
 import UpiQrCode from "./UpiQrCode";
@@ -75,24 +75,6 @@ function PaymentForm({ onPaymentAdded }) {
     const updatedPayments = [...existingPayments, newPayment];
     savePayments(updatedPayments);
     toast.success("Payment recorded");
-
-    const savedInvoices = getInvoices();
-    const invoiceIndex = savedInvoices.findIndex(inv => inv.id === selectedInvoice);
-    const invoiceToUpdate = { ...invoice };
-    const newTotalPaid = alreadyPaid + numericAmount;
-
-    if (newTotalPaid === invoiceToUpdate.total) {
-      invoiceToUpdate.status = "PAID";
-    } else if (newTotalPaid < invoiceToUpdate.total) {
-      invoiceToUpdate.status = "PARTIALLY PAID";
-    }
-
-    if (invoiceIndex !== -1) {
-      savedInvoices[invoiceIndex] = invoiceToUpdate;
-      saveInvoices(savedInvoices);
-    } else {
-      saveInvoices([...savedInvoices, invoiceToUpdate]);
-    }
 
     setSelectedInvoice("");
     setAmount("");

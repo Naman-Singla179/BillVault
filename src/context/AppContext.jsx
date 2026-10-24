@@ -20,6 +20,7 @@ import {
   getSettings,
   saveSettings,
 } from "../services/storage";
+import { reconcileInvoices } from "../utils/paymentUtils";
 
 const AppContext = createContext(null);
 
@@ -147,6 +148,18 @@ export function AppProvider({ children }) {
       window.removeEventListener("storage", handleChange);
     };
   }, []);
+
+  useEffect(() => {
+    const diffs = reconcileInvoices(invoices, payments);
+    if (diffs.length > 0) {
+      const diffMap = new Map(diffs.map((d) => [String(d.id), d.status]));
+      const updatedInvoices = invoices.map((inv) => {
+        const newStatus = diffMap.get(String(inv.id));
+        return newStatus ? { ...inv, status: newStatus } : inv;
+      });
+      saveInvoices(updatedInvoices);
+    }
+  }, [invoices, payments]);
 
   const value = useMemo(
     () => ({
