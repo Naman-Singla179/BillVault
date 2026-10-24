@@ -6,6 +6,7 @@ import DashboardPage from './pages/DashboardPage'
 
 import CustomersPage from './pages/CustomersPage'
 import CustomerDetailsPage from './pages/CustomerDetailsPage'
+import CustomerLedgerPage from './pages/CustomerLedgerPage'
 
 import BusinessProfilePage from './pages/BusinessProfilePage'
 import InvoicePreviewPage from './pages/InvoicePreviewPage'
@@ -79,6 +80,10 @@ function App() {
                 onDelete={deleteCustomer}
               />
             }
+          />
+          <Route
+            path="customers/:id/ledger"
+            element={<CustomerLedgerPage customers={customers} />}
           />
           <Route
             path="payments"

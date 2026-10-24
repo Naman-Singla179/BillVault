@@ -214,6 +214,14 @@ function CustomerList({ customers, onEdit, onDelete }) {
                         <button
                           type="button"
                           className="btn-icon"
+                          aria-label={`View Ledger for ${customer.name}`}
+                          onClick={() => navigate(`/customers/${customer.id}/ledger`)}
+                        >
+                          Ledger
+                        </button>
+                        <button
+                          type="button"
+                          className="btn-icon"
                           aria-label={`Edit ${customer.name}`}
                           onClick={() => onEdit(customer)}
                         >

@@ -1,0 +1,365 @@
+/* Customer Ledger Page Styles */
+
+.customer-ledger-page {
+  padding-bottom: 48px;
+}
+
+.customer-ledger-header {
+  margin-bottom: 24px;
+}
+
+.customer-ledger-back-link {
+  display: inline-block;
+  font-size: 13px;
+  color: #9aa1af;
+  text-decoration: none;
+  margin-bottom: 8px;
+  transition: color 0.15s ease;
+}
+
+.customer-ledger-back-link:hover {
+  color: #e9eaee;
+}
+
+.customer-ledger-title-group h1 {
+  font-size: 24px;
+  font-weight: 700;
+  color: #e9eaee;
+  margin: 0;
+}
+
+.customer-ledger-subtitle {
+  margin-top: 6px;
+  font-size: 14px;
+  color: #9aa1af;
+}
+
+.customer-ledger-subtitle strong {
+  color: #e9eaee;
+}
+
+/* 4 Summary Cards Grid */
+.customer-ledger-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.customer-ledger-metric-card {
+  padding: 20px;
+  background: #191d26;
+  border: 1px solid #262b36;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.metric-label {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #9aa1af;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.metric-value {
+  font-size: 26px;
+  font-weight: 700;
+  color: #e9eaee;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+
+.metric-value-success {
+  color: #3fb67f;
+}
+
+.metric-value-danger {
+  color: #e5484d;
+}
+
+.metric-value-neutral {
+  color: #e9eaee;
+}
+
+.metric-hint {
+  font-size: 12px;
+  color: #6b7280;
+  margin-top: 6px;
+}
+
+/* Section Containers */
+.customer-ledger-section {
+  padding: 24px;
+  background: #191d26;
+  border: 1px solid #262b36;
+  border-radius: 10px;
+  margin-bottom: 24px;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.section-header h3 {
+  font-size: 16px;
+  font-weight: 700;
+  color: #e9eaee;
+  margin: 0;
+}
+
+.section-description {
+  font-size: 13px;
+  color: #9aa1af;
+  margin-top: 4px;
+}
+
+.aging-status-pill {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 999px;
+  border: 1px solid #1e4632;
+  background: #14291f;
+  color: #4ade80;
+}
+
+/* Aging Breakdown List */
+.customer-ledger-aging-list {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #262b36;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.aging-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 18px;
+  border-bottom: 1px solid #262b36;
+  background: #14171e;
+  transition: background-color 0.15s ease;
+}
+
+.aging-row:hover {
+  background: #191d26;
+}
+
+.aging-row-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.aging-category {
+  font-size: 14px;
+  font-weight: 600;
+  color: #e9eaee;
+}
+
+.aging-criteria {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.aging-row-amount {
+  font-size: 15px;
+  font-weight: 600;
+  color: #e9eaee;
+}
+
+.amount-alert {
+  color: #e5484d;
+}
+
+.aging-row-unavailable {
+  border-left: 3px solid #d9a441;
+}
+
+.aging-total-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 18px;
+  background: #191d26;
+  font-weight: 700;
+  border-top: 1px solid #333947;
+}
+
+.aging-total-label {
+  font-size: 14px;
+  color: #e9eaee;
+}
+
+.aging-total-amount {
+  font-size: 16px;
+  color: #e5484d;
+}
+
+/* Invoice History Table */
+.customer-ledger-table-wrap {
+  overflow-x: auto;
+  border: 1px solid #262b36;
+  border-radius: 8px;
+}
+
+.customer-ledger-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.customer-ledger-table th {
+  padding: 12px 18px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #9aa1af;
+  background: #14171e;
+  border-bottom: 1px solid #262b36;
+  white-space: nowrap;
+}
+
+.customer-ledger-table td {
+  padding: 14px 18px;
+  font-size: 14px;
+  color: #e9eaee;
+  border-bottom: 1px solid #262b36;
+}
+
+.customer-ledger-table tr:last-child td {
+  border-bottom: none;
+}
+
+.table-invoice-id {
+  font-weight: 600;
+  color: #d9a441;
+}
+
+.table-amount-paid {
+  color: #3fb67f;
+}
+
+.table-amount-due {
+  color: #e5484d;
+  font-weight: 600;
+}
+
+/* Status Badges */
+.ledger-status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.badge-paid {
+  background: #14291f;
+  color: #4ade80;
+  border: 1px solid #1e4632;
+}
+
+.badge-partial {
+  background: #2b2210;
+  color: #facc15;
+  border: 1px solid #4d3b17;
+}
+
+.badge-overdue {
+  background: #2e1518;
+  color: #f87171;
+  border: 1px solid #502327;
+}
+
+.badge-pending {
+  background: #20242f;
+  color: #9aa1af;
+  border: 1px solid #333947;
+}
+
+/* Empty State & Not Found */
+.customer-ledger-not-found {
+  padding: 48px 24px;
+  text-align: center;
+}
+
+.customer-ledger-not-found h2 {
+  font-size: 20px;
+  color: #e9eaee;
+  margin-bottom: 8px;
+}
+
+.customer-ledger-not-found p {
+  color: #9aa1af;
+  margin-bottom: 20px;
+}
+
+.customer-ledger-back-btn {
+  display: inline-block;
+  padding: 9px 18px;
+  border-radius: 6px;
+  background: transparent;
+  border: 1px solid #333947;
+  color: #e9eaee;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+  transition: background-color 0.15s ease;
+}
+
+.customer-ledger-back-btn:hover {
+  background: #20242f;
+}
+
+.customer-ledger-empty {
+  padding: 40px 20px;
+  text-align: center;
+  color: #9aa1af;
+}
+
+.customer-ledger-empty h3 {
+  color: #e9eaee;
+  margin-bottom: 6px;
+  font-size: 15px;
+}
+
+/* Responsive Behavior */
+@media (max-width: 960px) {
+  .customer-ledger-metrics-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .customer-ledger-metrics-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .aging-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .aging-row-amount {
+    align-self: flex-start;
+  }
+
+  .customer-ledger-table th,
+  .customer-ledger-table td {
+    padding: 10px 12px;
+  }
+}
