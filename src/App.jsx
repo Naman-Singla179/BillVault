@@ -7,6 +7,7 @@ import DashboardPage from './pages/DashboardPage'
 import CustomersPage from './pages/CustomersPage'
 import CustomerDetailsPage from './pages/CustomerDetailsPage'
 import CustomerLedgerPage from './pages/CustomerLedgerPage'
+import ProductsPage from './pages/ProductsPage'
 
 import BusinessProfilePage from './pages/BusinessProfilePage'
 import InvoicePreviewPage from './pages/InvoicePreviewPage'
@@ -88,6 +89,10 @@ function App() {
           <Route
             path="payments"
             element={<Payments />}
+          />
+          <Route
+            path="products"
+            element={<ProductsPage />}
           />
           <Route
             path="business-profile"

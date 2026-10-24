@@ -1,11 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getInvoices, saveInvoices } from '../../services/storage';
+import { getInvoices, saveInvoices, getProducts } from '../../services/storage';
 
 export default function CreateInvoice({ customers = [], onAddCustomer }) {
   const navigate = useNavigate();
 
   const [selectedRowId, setSelectedRowId] = useState(null);
+  const [catalogProducts] = useState(() => getProducts());
   const [invoice, setInvoice] = useState(() => {
     const existing = getInvoices();
     let maxNum = 0;
@@ -67,6 +68,23 @@ export default function CreateInvoice({ customers = [], onAddCustomer }) {
     const newItems = [...invoice.items];
     newItems[index][field] = value;
     setInvoice(prev => ({ ...prev, items: newItems }));
+  };
+
+  const handleCatalogSelect = (index, productId) => {
+    if (!productId) return;
+    const product = catalogProducts.find((p) => String(p.id) === String(productId));
+    if (!product) return;
+    const newItems = [...invoice.items];
+    newItems[index] = {
+      ...newItems[index],
+      description: product.name,
+      price: product.price,
+    };
+    const updatedInvoice = { ...invoice, items: newItems };
+    if (product.gst !== undefined && product.gst !== null && product.gst !== '') {
+      updatedInvoice.tax = Number(product.gst);
+    }
+    setInvoice(updatedInvoice);
   };
 
   const addItemRow = () => {
@@ -205,13 +223,33 @@ export default function CreateInvoice({ customers = [], onAddCustomer }) {
             className="form-row" 
             onClick={() => setSelectedRowId(item.id)}
             style={{ 
-              gridTemplateColumns: '2fr 1fr 1fr', 
+              gridTemplateColumns: catalogProducts.length > 0 ? '1.5fr 2fr 1fr 1fr' : '2fr 1fr 1fr', 
               marginBottom: '12px',
               borderRadius: '4px',
               padding: '4px',
               cursor: 'pointer'
             }}
           >
+            {catalogProducts.length > 0 && (
+              <div className="form-field" style={{ marginBottom: 0 }}>
+                {index === 0 && <label>From Catalog</label>}
+                <select
+                  defaultValue=""
+                  onChange={(e) => {
+                    handleCatalogSelect(index, e.target.value);
+                    e.target.value = '';
+                  }}
+                  aria-label="Select item from catalog"
+                >
+                  <option value="" disabled>-- Select Catalog Item --</option>
+                  {catalogProducts.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name} (₹{p.price})
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
             <div className="form-field" style={{ marginBottom: 0 }}>
               {index === 0 && <label>Item Description</label>}
               <input

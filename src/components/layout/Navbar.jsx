@@ -7,9 +7,10 @@ const NAV_ITEMS = [
   { to: '/invoices', label: 'Invoices' },
   { to: '/customers', label: 'Customers' },
   { to: '/payments', label: 'Payments' },
+  { to: '/products', label: 'Products' },
 ]
 
-function Navbar({ title, profile }) {
+function Navbar({ profile }) {
   const bizName = profile?.name || "My Business";
   const bizInitials = bizName.substring(0, 2).toUpperCase();
 
