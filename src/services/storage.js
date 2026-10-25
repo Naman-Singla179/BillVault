@@ -58,13 +58,6 @@ export function savePayments(payments) {
   return safeSet(KEYS.payments, payments);
 }
 
-export function getProducts() {
-  return safeGet(KEYS.products, []);
-}
-
-export function saveProducts(products) {
-  return safeSet(KEYS.products, products);
-}
 
 export function getBusiness() {
   return safeGet(KEYS.business, {});
