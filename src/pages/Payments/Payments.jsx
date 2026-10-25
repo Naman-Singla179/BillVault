@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import PaymentForm from '../../components/payment/PaymentForm';
 import PaymentHistory from '../../components/payment/PaymentHistory';
+import PaymentMethodChart from '../../components/payment/PaymentMethodChart';
 import { getPayments, getInvoices, getCustomers } from '../../services/storage';
 import { useApp } from "../../context/AppContext";
 
@@ -34,6 +35,8 @@ function Payments() {
         </div>
       </div>
       <PaymentForm onPaymentAdded={loadPayments} />
+
+      <PaymentMethodChart />
 
       <section style={{ marginTop: '32px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
