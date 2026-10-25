@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useToast } from '../../context/ToastContext';
 import { getInvoices, saveInvoices } from '../../services/storage';
 
 export default function CreateInvoice({ customers = [], onAddCustomer }) {
   const navigate = useNavigate();
+  const toast = useToast();
 
   const [selectedRowId, setSelectedRowId] = useState(null);
   const [invoice, setInvoice] = useState(() => {
@@ -93,9 +95,18 @@ export default function CreateInvoice({ customers = [], onAddCustomer }) {
   };
 
   const handleSave = () => {
-    if (!invoice.customerId) return alert("Enter or select a customer!");
-    if (!invoice.date) return alert("Select an invoice date!");
-    if (!invoice.dueDate) return alert("Select a due date!");
+    if (!invoice.customerId) {
+      toast.error("Enter or select a customer!");
+      return;
+    }
+    if (!invoice.date) {
+      toast.error("Select an invoice date!");
+      return;
+    }
+    if (!invoice.dueDate) {
+      toast.error("Select a due date!");
+      return;
+    }
 
     const existing = getInvoices();
     const isDuplicate = existing.some(inv => inv.id === invoice.id);
@@ -118,7 +129,7 @@ export default function CreateInvoice({ customers = [], onAddCustomer }) {
       }
     }
 
-    alert("Invoice Saved!");
+    toast.success("Invoice Saved!");
     navigate('/payments', { state: { invoiceId: invoice.id, amount: invoice.total } });
   };
 
