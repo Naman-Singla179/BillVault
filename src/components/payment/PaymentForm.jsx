@@ -170,7 +170,7 @@ function PaymentForm({ onPaymentAdded }) {
         </div>
       </div>
 
-      {selectedInvoice && currentInvoice && (
+      {method === "UPI" && selectedInvoice && currentInvoice && (
         <div
           className="payment-form-qr-section"
           style={{
