@@ -11,6 +11,7 @@ import ProductsPage from './pages/ProductsPage'
 
 import BusinessProfilePage from './pages/BusinessProfilePage'
 import InvoicePreviewPage from './pages/InvoicePreviewPage'
+import Invoices from './pages/Invoices/Invoices'
 import CreateInvoice from './pages/Invoices/CreateInvoice'
 import Payments from './pages/Payments/Payments'
 import './styles/global.css'
@@ -59,6 +60,14 @@ function App() {
           />
           <Route
             path="invoices"
+            element={<Invoices />}
+          />
+          <Route
+            path="invoices/new"
+            element={<CreateInvoice customers={customers} onAddCustomer={addCustomer} />}
+          />
+          <Route
+            path="invoices/edit/:id"
             element={<CreateInvoice customers={customers} onAddCustomer={addCustomer} />}
           />
           <Route

@@ -1,0 +1,272 @@
+.invoices-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.invoices-toolbar {
+  margin-bottom: 20px;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.toolbar-top-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.invoices-tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.tab-button {
+  background: transparent;
+  border: 1px solid rgb(38, 43, 54);
+  color: rgb(154, 161, 175);
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.tab-button:hover {
+  background: rgb(32, 37, 48);
+  color: rgb(233, 234, 238);
+}
+
+.tab-button.active {
+  background: rgb(38, 43, 54);
+  color: rgb(233, 234, 238);
+  border-color: rgb(217, 164, 65);
+}
+
+.tab-badge {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 2px 6px;
+  border-radius: 10px;
+  font-size: 11px;
+}
+
+.invoices-search {
+  min-width: 260px;
+  max-width: 340px;
+  width: 100%;
+}
+
+.invoices-search input {
+  width: 100%;
+  padding: 8px 14px;
+  background: rgb(14, 16, 21);
+  border: 1px solid rgb(38, 43, 54);
+  border-radius: var(--radius-sm);
+  color: rgb(233, 234, 238);
+  font-size: 13px;
+  outline: none;
+}
+
+.invoices-search input:focus {
+  border-color: rgb(217, 164, 65);
+}
+
+.toolbar-bottom-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding-top: 12px;
+  border-top: 1px solid rgb(38, 43, 54);
+}
+
+.date-filter-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-size: 13px;
+  color: rgb(154, 161, 175);
+}
+
+.date-filter-group input[type="date"] {
+  background: rgb(14, 16, 21);
+  border: 1px solid rgb(38, 43, 54);
+  color: rgb(233, 234, 238);
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 12.5px;
+  outline: none;
+}
+
+.date-filter-group input[type="date"]:focus {
+  border-color: rgb(217, 164, 65);
+}
+
+.sort-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: rgb(154, 161, 175);
+}
+
+.sort-group select {
+  background: rgb(14, 16, 21);
+  border: 1px solid rgb(38, 43, 54);
+  color: rgb(233, 234, 238);
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 12.5px;
+  outline: none;
+  cursor: pointer;
+}
+
+.sort-group select:focus {
+  border-color: rgb(217, 164, 65);
+}
+
+.btn-reset-filters {
+  background: transparent;
+  border: none;
+  color: rgb(217, 164, 65);
+  font-size: 12px;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 4px 6px;
+}
+
+.btn-reset-filters:hover {
+  color: rgb(245, 185, 80);
+}
+
+.invoices-table-container {
+  overflow-x: auto;
+  padding: 0;
+}
+
+.invoices-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 14px;
+}
+
+.invoices-table th {
+  padding: 14px 16px;
+  background: rgb(20, 23, 30);
+  color: rgb(154, 161, 175);
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid rgb(38, 43, 54);
+}
+
+.invoices-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid rgb(38, 43, 54);
+  color: rgb(233, 234, 238);
+}
+
+.invoices-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.invoice-id-badge {
+  font-family: monospace;
+  font-weight: 600;
+  color: rgb(217, 164, 65);
+}
+
+.status-pill {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.status-pill.status-paid {
+  background: rgba(63, 182, 127, 0.15);
+  color: rgb(63, 182, 127);
+  border: 1px solid rgba(63, 182, 127, 0.3);
+}
+
+.status-pill.status-pending {
+  background: rgba(217, 164, 65, 0.15);
+  color: rgb(217, 164, 65);
+  border: 1px solid rgba(217, 164, 65, 0.3);
+}
+
+.status-pill.status-overdue {
+  background: rgba(229, 72, 77, 0.15);
+  color: rgb(229, 72, 77);
+  border: 1px solid rgba(229, 72, 77, 0.3);
+}
+
+.status-pill.status-draft {
+  background: rgba(154, 161, 175, 0.15);
+  color: rgb(154, 161, 175);
+  border: 1px solid rgba(154, 161, 175, 0.3);
+}
+
+.table-actions {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.action-btn-sm {
+  padding: 5px 9px;
+  font-size: 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  border: 1px solid rgb(38, 43, 54);
+  background: rgb(20, 23, 30);
+  color: rgb(233, 234, 238);
+  transition: all 0.2s ease;
+}
+
+.action-btn-sm:hover {
+  background: rgb(38, 43, 54);
+  border-color: rgb(217, 164, 65);
+}
+
+.action-btn-danger {
+  color: rgb(229, 72, 77);
+  border-color: rgba(229, 72, 77, 0.3);
+}
+
+.action-btn-danger:hover {
+  background: rgba(229, 72, 77, 0.15);
+  border-color: rgb(229, 72, 77);
+}
+
+.invoices-empty {
+  padding: 48px 24px;
+  text-align: center;
+  color: rgb(154, 161, 175);
+}
+
+.invoices-empty h3 {
+  margin-bottom: 8px;
+  color: rgb(233, 234, 238);
+}
+
+.invoices-empty p {
+  margin-bottom: 20px;
+}

@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { getInvoices, saveInvoices, getProducts } from '../../services/storage';
 
 export default function CreateInvoice({ customers = [], onAddCustomer }) {
   const navigate = useNavigate();
+  const { id } = useParams();
+  const isEditMode = Boolean(id);
 
   const [selectedRowId, setSelectedRowId] = useState(null);
   const [catalogProducts] = useState(() => getProducts());
@@ -110,17 +112,36 @@ export default function CreateInvoice({ customers = [], onAddCustomer }) {
     }
   };
 
+  // Load existing invoice if we are in Edit Mode
+  useEffect(() => {
+    if (id) {
+      const allInvoices = getInvoices();
+      const existingInvoice = allInvoices.find(inv => String(inv.id) === String(id));
+      if (existingInvoice) {
+        setInvoice(existingInvoice);
+      }
+    }
+  }, [id]);
+
   const handleSave = () => {
     if (!invoice.customerId) return alert("Enter or select a customer!");
     if (!invoice.date) return alert("Select an invoice date!");
     if (!invoice.dueDate) return alert("Select a due date!");
 
     const existing = getInvoices();
-    const isDuplicate = existing.some(inv => inv.id === invoice.id);
+    let updatedList;
 
-    if (!isDuplicate) {
-      saveInvoices([...existing, invoice]);
+    if (isEditMode) {
+      // Edit mode: replace the existing invoice
+      updatedList = existing.map(inv => String(inv.id) === String(id) ? invoice : inv);
+      alert("Invoice updated successfully!");
+    } else {
+      // Create mode: add new invoice
+      updatedList = [...existing, invoice];
+      alert("Invoice created successfully!");
     }
+
+    saveInvoices(updatedList);
 
     if (onAddCustomer && invoice.customerId) {
       const existingCustomer = customers.find(
@@ -136,17 +157,24 @@ export default function CreateInvoice({ customers = [], onAddCustomer }) {
       }
     }
 
-    alert("Invoice Saved!");
-    navigate('/payments', { state: { invoiceId: invoice.id, amount: invoice.total } });
+    // Redirect to invoices list
+    navigate('/invoices');
   };
 
   return (
     <div className="page">
       <div className="page-header">
         <div>
-          <h1>Create Invoice</h1>
-          <p>Fill out the details below to generate a new invoice.</p>
+          <h1>{isEditMode ? 'Edit Invoice' : 'Create Invoice'}</h1>
+          <p>{isEditMode ? `Update details for invoice ${invoice.id}` : 'Fill out the details below to generate a new invoice.'}</p>
         </div>
+        <button 
+          type="button" 
+          className="btn btn-secondary" 
+          onClick={() => navigate('/invoices')}
+        >
+          ← Back to Invoices
+        </button>
       </div>
 
       <div className="card" style={{ padding: '24px' }}>
@@ -322,7 +350,7 @@ export default function CreateInvoice({ customers = [], onAddCustomer }) {
                 <h2 style={{ color: 'rgb(63, 182, 127)', margin: 0 }}>Total: ₹{invoice.total.toFixed(2)}</h2>
               </div>
               <button className="btn btn-primary" onClick={handleSave} style={{ padding: '12px 24px', fontSize: '15px' }}>
-                Save Invoice
+                {isEditMode ? 'Update Invoice' : 'Save Invoice'}
               </button>
             </div>
 
