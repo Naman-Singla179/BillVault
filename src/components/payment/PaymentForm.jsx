@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import { getPayments, savePayments, getInvoices, saveInvoices, getCustomers } from "../../services/storage";
+import { getPayments, savePayments, getInvoices, getCustomers } from "../../services/storage";
 import { formatInvoiceId, calculateTotalPaid } from "../../utils/paymentUtils";
-
+import { useToast } from "../../context/ToastContext";
+import UpiQrCode from "./UpiQrCode";
 
 function PaymentForm({ onPaymentAdded }) {
   const location = useLocation();
+  const toast = useToast();
   const [selectedInvoice, setSelectedInvoice] = useState(location.state?.invoiceId || "");
   const [amount, setAmount] = useState(location.state?.amount || "");
   const [method, setMethod] = useState("Cash");
@@ -72,24 +74,7 @@ function PaymentForm({ onPaymentAdded }) {
 
     const updatedPayments = [...existingPayments, newPayment];
     savePayments(updatedPayments);
-
-    const savedInvoices = getInvoices();
-    const invoiceIndex = savedInvoices.findIndex(inv => inv.id === selectedInvoice);
-    const invoiceToUpdate = { ...invoice };
-    const newTotalPaid = alreadyPaid + numericAmount;
-
-    if (newTotalPaid === invoiceToUpdate.total) {
-      invoiceToUpdate.status = "PAID";
-    } else if (newTotalPaid < invoiceToUpdate.total) {
-      invoiceToUpdate.status = "PARTIALLY PAID";
-    }
-
-    if (invoiceIndex !== -1) {
-      savedInvoices[invoiceIndex] = invoiceToUpdate;
-      saveInvoices(savedInvoices);
-    } else {
-      saveInvoices([...savedInvoices, invoiceToUpdate]);
-    }
+    toast.success("Payment recorded");
 
     setSelectedInvoice("");
     setAmount("");
@@ -102,6 +87,20 @@ function PaymentForm({ onPaymentAdded }) {
       onPaymentAdded();
     }
   }
+
+  const currentInvoice = allInvoices.find((inv) => String(inv.id) === String(selectedInvoice));
+  const currentInvoicePaid = currentInvoice ? calculateTotalPaid(payments, currentInvoice.id) : 0;
+  const invoiceRemaining = currentInvoice ? Math.max(0, Number(currentInvoice.total) - currentInvoicePaid) : 0;
+
+  const enteredAmount = parseFloat(amount);
+  const isAmountWithinBalance =
+    amount !== "" &&
+    !isNaN(enteredAmount) &&
+    enteredAmount > 0 &&
+    enteredAmount <= invoiceRemaining;
+
+  const qrAmount = isAmountWithinBalance ? enteredAmount : invoiceRemaining;
+  const qrInvoiceId = currentInvoice ? formatInvoiceId(currentInvoice.id) : "";
 
   return (
     <form onSubmit={handleSubmit} className="card" style={{ padding: "24px" }}>
@@ -171,11 +170,35 @@ function PaymentForm({ onPaymentAdded }) {
         </div>
       </div>
 
+      {method === "UPI" && selectedInvoice && currentInvoice && (
+        <div
+          className="payment-form-qr-section"
+          style={{
+            borderTop: "1px solid rgb(38, 43, 54)",
+            paddingTop: "16px",
+            marginBottom: "20px",
+          }}
+        >
+          <h4
+            style={{
+              fontSize: "14px",
+              fontWeight: "600",
+              marginBottom: "12px",
+              color: "rgb(154, 161, 175)",
+            }}
+          >
+            Scan to pay
+          </h4>
+          <UpiQrCode amount={qrAmount} invoiceId={qrInvoiceId} />
+        </div>
+      )}
+
       <div className="form-actions">
         <button type="submit" className="btn btn-primary">
           Record Payment
         </button>
       </div>
+
     </form>
   );
 }

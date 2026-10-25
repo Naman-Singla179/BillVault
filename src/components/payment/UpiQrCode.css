@@ -1,0 +1,120 @@
+.upi-qr-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  text-align: center;
+}
+
+/* QR code box */
+.upi-qr-box {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  padding: 12px;
+  background: white;
+  border-radius: var(--radius-md, 10px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* QR image */
+.upi-qr-image {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--radius-sm, 6px);
+}
+
+.upi-qr-image.hidden {
+  display: none;
+}
+
+/* Loading spinner */
+.upi-qr-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f8f9fa;
+  border-radius: var(--radius-sm, 6px);
+}
+
+.upi-qr-spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid rgba(0, 0, 0, 0.1);
+  border-top-color: rgb(217, 164, 65);
+  border-radius: 50%;
+  animation: upi-qr-spin 0.8s linear infinite;
+}
+
+@keyframes upi-qr-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* QR code details */
+.upi-qr-caption {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.upi-qr-caption-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: rgb(233, 234, 238);
+}
+
+.upi-qr-caption-upi {
+  font-size: 13px;
+  color: rgb(154, 161, 175);
+}
+
+.upi-qr-caption-amount {
+  font-size: 14px;
+  font-weight: 600;
+  color: rgb(217, 164, 65);
+}
+
+/* Error message */
+.upi-qr-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  text-align: center;
+}
+
+.upi-qr-error p {
+  margin: 0;
+  color: rgb(229, 72, 77);
+  font-size: 14px;
+}
+
+/* Empty states */
+.upi-qr-empty.empty-state {
+  padding: 16px 12px;
+}
+
+.upi-qr-empty p {
+  font-size: 13px;
+  color: rgb(154, 161, 175);
+}
+
+.upi-qr-empty a {
+  color: rgb(217, 164, 65);
+  text-decoration: underline;
+  font-weight: 500;
+}
+
+/* Print styling */
+@media print {
+  .upi-qr-caption * {
+    color: black !important;
+  }
+}

@@ -1,6 +1,5 @@
-import { useState, useEffect } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
-import { getCustomers, saveCustomers, getBusiness, saveBusiness } from './services/storage'
+import { useApp } from './context/AppContext'
 import PageLayout from './components/layout/PageLayout'
 import DashboardPage from './pages/DashboardPage'
 
@@ -16,38 +15,8 @@ import CreateInvoice from './pages/Invoices/CreateInvoice'
 import Payments from './pages/Payments/Payments'
 import './styles/global.css'
 
-
-const INITIAL_CUSTOMERS = [];
-
 function App() {
-  const [customers, setCustomers] = useState(() => {
-    const saved = getCustomers();
-    return saved.length > 0 ? saved : INITIAL_CUSTOMERS;
-  });
-  const [businessProfile, setBusinessProfile] = useState(() => getBusiness())
-
-  useEffect(() => {
-    saveCustomers(customers);
-  }, [customers]);
-
-  useEffect(() => {
-    if (businessProfile && Object.keys(businessProfile).length > 0) {
-      saveBusiness(businessProfile);
-    }
-  }, [businessProfile]);
-
-  function addCustomer(data) {
-    const newCustomer = { id: Date.now(), ...data }
-    setCustomers((prev) => [...prev, newCustomer])
-  }
-
-  function updateCustomer(id, data) {
-    setCustomers((prev) => prev.map((c) => (c.id === id ? { ...c, ...data } : c)))
-  }
-
-  function deleteCustomer(id) {
-    setCustomers((prev) => prev.filter((c) => c.id !== id))
-  }
+  const { customers, businessProfile, addCustomer, updateCustomer, deleteCustomer, setBusinessProfile } = useApp()
 
   return (
     <BrowserRouter>

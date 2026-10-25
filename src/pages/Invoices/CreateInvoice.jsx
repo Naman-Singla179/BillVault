@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useToast } from '../../context/ToastContext';
 import { getInvoices, saveInvoices, getProducts } from '../../services/storage';
 
 export default function CreateInvoice({ customers = [], onAddCustomer }) {
   const navigate = useNavigate();
   const { id } = useParams();
   const isEditMode = Boolean(id);
+  const toast = useToast();
 
   const [selectedRowId, setSelectedRowId] = useState(null);
   const [catalogProducts] = useState(() => getProducts());
@@ -124,9 +126,18 @@ export default function CreateInvoice({ customers = [], onAddCustomer }) {
   }, [id]);
 
   const handleSave = () => {
-    if (!invoice.customerId) return alert("Enter or select a customer!");
-    if (!invoice.date) return alert("Select an invoice date!");
-    if (!invoice.dueDate) return alert("Select a due date!");
+    if (!invoice.customerId) {
+      toast.error("Enter or select a customer!");
+      return;
+    }
+    if (!invoice.date) {
+      toast.error("Select an invoice date!");
+      return;
+    }
+    if (!invoice.dueDate) {
+      toast.error("Select a due date!");
+      return;
+    }
 
     const existing = getInvoices();
     let updatedList;
@@ -157,7 +168,11 @@ export default function CreateInvoice({ customers = [], onAddCustomer }) {
       }
     }
 
-    // Redirect to invoices list
+    if (toast?.success) {
+      toast.success(isEditMode ? "Invoice updated successfully!" : "Invoice created successfully!");
+    } else {
+      alert(isEditMode ? "Invoice updated successfully!" : "Invoice created successfully!");
+    }
     navigate('/invoices');
   };
 

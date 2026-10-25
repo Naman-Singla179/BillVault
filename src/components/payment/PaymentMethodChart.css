@@ -1,0 +1,156 @@
+.payment-methods-card {
+  padding: 24px;
+  margin-top: 32px;
+}
+
+.payment-methods-title {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0 0 20px 0;
+}
+
+.payment-methods-body {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 32px;
+}
+
+.payment-methods-chart-pane {
+  flex: 0 0 220px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.payment-donut-svg {
+  width: 100%;
+  max-width: 200px;
+  height: auto;
+  display: block;
+}
+
+.payment-donut-total {
+  font-family: var(--font-display, inherit);
+  font-size: 16px;
+  font-weight: 700;
+  fill: currentColor;
+}
+
+.payment-donut-label {
+  font-family: var(--font-body, inherit);
+  font-size: 12px;
+  fill: currentColor;
+  opacity: 0.65;
+}
+
+.payment-chart-empty {
+  padding: 32px 16px;
+  min-height: 180px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.payment-legend {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.payment-legend-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgb(38, 43, 54);
+  border-radius: var(--radius-sm, 6px);
+  gap: 16px;
+  transition: opacity 0.15s ease;
+}
+
+.payment-legend-row-muted {
+  opacity: 0.45;
+  background: transparent;
+  border-color: rgba(38, 43, 54, 0.5);
+}
+
+.payment-legend-item-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 120px;
+}
+
+.payment-legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.payment-legend-name {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.payment-legend-item-data {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-left: auto;
+}
+
+.payment-legend-amount {
+  font-size: 14px;
+  font-weight: 600;
+  min-width: 80px;
+  text-align: right;
+}
+
+.payment-legend-count {
+  font-size: 13px;
+  opacity: 0.75;
+  min-width: 75px;
+  text-align: right;
+}
+
+.payment-legend-percentage {
+  font-size: 13px;
+  font-weight: 600;
+  min-width: 48px;
+  text-align: right;
+}
+
+@media (max-width: 768px) {
+  .payment-methods-body {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 24px;
+  }
+
+  .payment-methods-chart-pane {
+    flex: 1 1 auto;
+    margin: 0 auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .payment-legend-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .payment-legend-item-data {
+    margin-left: 20px;
+    width: calc(100% - 20px);
+    justify-content: space-between;
+  }
+}

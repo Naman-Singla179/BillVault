@@ -1,7 +1,10 @@
-const KEYS = {
+export const STORAGE_EVENT = "billvault:storage-changed";
+
+export const KEYS = {
   customers: "billvault_customers",
   invoices: "billvault_invoices",
   payments: "billvault_payments",
+  products: "billvault_products",
   business: "billvault_business",
   settings: "billvault_settings",
   products: "billvault_products",
@@ -23,6 +26,7 @@ function safeGet(key, defaultValue) {
 function safeSet(key, value) {
   try {
     localStorage.setItem(key, JSON.stringify(value));
+    window.dispatchEvent(new CustomEvent(STORAGE_EVENT, { detail: { key } }));
     return true;
   } catch (error) {
     console.error(`storage.js: failed to save "${key}".`, error);
@@ -52,6 +56,14 @@ export function getPayments() {
 
 export function savePayments(payments) {
   return safeSet(KEYS.payments, payments);
+}
+
+export function getProducts() {
+  return safeGet(KEYS.products, []);
+}
+
+export function saveProducts(products) {
+  return safeSet(KEYS.products, products);
 }
 
 export function getBusiness() {
@@ -231,4 +243,5 @@ export function saveProducts(products) {
 
 export function clearAllData() {
   Object.values(KEYS).forEach((key) => localStorage.removeItem(key));
+  window.dispatchEvent(new CustomEvent(STORAGE_EVENT, { detail: { key: null } }));
 }

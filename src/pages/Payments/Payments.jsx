@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import PaymentForm from '../../components/payment/PaymentForm';
 import PaymentHistory from '../../components/payment/PaymentHistory';
+import PaymentMethodChart from '../../components/payment/PaymentMethodChart';
 import { getPayments, getInvoices, getCustomers } from '../../services/storage';
-import { formatInvoiceId } from '../../utils/paymentUtils';
+import { useApp } from "../../context/AppContext";
 
 function Payments() {
+  const { payments: ctxPayments } = useApp();
   const [payments, setPayments] = useState([]);
   const [invoices, setInvoices] = useState([]);
   const [customers, setCustomers] = useState([]);
@@ -33,6 +35,8 @@ function Payments() {
         </div>
       </div>
       <PaymentForm onPaymentAdded={loadPayments} />
+
+      <PaymentMethodChart />
 
       <section style={{ marginTop: '32px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
