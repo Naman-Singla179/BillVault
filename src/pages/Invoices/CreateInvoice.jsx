@@ -11,6 +11,8 @@ export default function CreateInvoice({ customers = [], onAddCustomer }) {
 
   const [selectedRowId, setSelectedRowId] = useState(null);
   const [catalogProducts] = useState(() => getProducts());
+  const [errors, setErrors] = useState({});
+
   const [invoice, setInvoice] = useState(() => {
     const existing = getInvoices();
     let maxNum = 0;
@@ -25,140 +27,143 @@ export default function CreateInvoice({ customers = [], onAddCustomer }) {
     
     return {
       id: nextId,
-    customerId: '',
-    customerPhone: '',
-    customerEmail: '',
-    customerAddress: '',
-    date: '',
-    dueDate: '',
-    items: [{ id: Date.now(), description: '', quantity: 1, price: 0 }],
-    subtotal: 0,
-    tax: 0,
-    discount: 0,
-    total: 0,
-    status: 'PENDING'
+      customerId: '',
+      customerPhone: '',
+      customerEmail: '',
+      customerAddress: '',
+      date: '',
+      dueDate: '',
+      items: [{ id: Date.now(), description: '', quantity: 1, price: 0 }],
+      subtotal: 0,
+      tax: 0,
+      discount: 0,
+      total: 0,
+      status: 'PENDING'
     };
   });
 
   useEffect(() => {
-    const newSubtotal = invoice.items.reduce((sum, item) => {
-      return sum + (Number(item.quantity) * Number(item.price));
+    const subtotal = invoice.items.reduce((sum, item) => {
+      return sum + (Number(item.quantity || 0) * Number(item.price || 0));
     }, 0);
 
-    const taxAmount = newSubtotal * (Number(invoice.tax) / 100);
-    const newTotal = newSubtotal + taxAmount - Number(invoice.discount);
+    const taxAmount = subtotal * (Number(invoice.tax || 0) / 100);
+    const total = Math.max(0, subtotal + taxAmount - Number(invoice.discount || 0));
 
-    setInvoice(prev => ({ ...prev, subtotal: newSubtotal, total: newTotal }));
+    setInvoice(prev => ({ ...prev, subtotal, total }));
   }, [invoice.items, invoice.tax, invoice.discount]);
+
+  useEffect(() => {
+    if (id) {
+      const existing = getInvoices().find(inv => String(inv.id) === String(id));
+      if (existing) {
+        setInvoice(existing);
+      }
+    }
+  }, [id]);
 
   const handleCustomerChange = (e) => {
     const name = e.target.value;
-    const existingCustomer = customers.find(c => c.name === name || String(c.id) === String(name));
+    const found = customers.find(c => c.name === name || String(c.id) === String(name));
     
-    if (existingCustomer) {
-      setInvoice(prev => ({
-        ...prev,
+    if (found) {
+      setInvoice({
+        ...invoice,
         customerId: name,
-        customerPhone: existingCustomer.phone || '',
-        customerEmail: existingCustomer.email || '',
-        customerAddress: existingCustomer.address || ''
-      }));
+        customerPhone: found.phone || '',
+        customerEmail: found.email || '',
+        customerAddress: found.address || ''
+      });
     } else {
-      setInvoice(prev => ({ ...prev, customerId: name }));
+      setInvoice({ ...invoice, customerId: name });
+    }
+
+    if (errors.customerId) {
+      setErrors({ ...errors, customerId: '' });
     }
   };
 
   const handleItemChange = (index, field, value) => {
     const newItems = [...invoice.items];
     newItems[index][field] = value;
-    setInvoice(prev => ({ ...prev, items: newItems }));
+    setInvoice({ ...invoice, items: newItems });
   };
 
   const handleCatalogSelect = (index, productId) => {
-    if (!productId) return;
-    const product = catalogProducts.find((p) => String(p.id) === String(productId));
+    const product = catalogProducts.find(p => String(p.id) === String(productId));
     if (!product) return;
+
     const newItems = [...invoice.items];
     newItems[index] = {
       ...newItems[index],
       description: product.name,
-      price: product.price,
+      price: product.price
     };
-    const updatedInvoice = { ...invoice, items: newItems };
-    if (product.gst !== undefined && product.gst !== null && product.gst !== '') {
-      updatedInvoice.tax = Number(product.gst);
-    }
-    setInvoice(updatedInvoice);
+
+    setInvoice({
+      ...invoice,
+      items: newItems,
+      tax: product.gst ? Number(product.gst) : invoice.tax
+    });
   };
 
   const addItemRow = () => {
-    setInvoice(prev => ({
-      ...prev,
-      items: [...prev.items, { id: Date.now(), description: '', quantity: 1, price: 0 }]
-    }));
+    setInvoice({
+      ...invoice,
+      items: [...invoice.items, { id: Date.now(), description: '', quantity: 1, price: 0 }]
+    });
   };
 
   const removeSelectedItem = () => {
-    if (invoice.items.length > 1) {
-      setInvoice(prev => {
-        let newItems;
-        if (selectedRowId) {
-          newItems = prev.items.filter(item => item.id !== selectedRowId);
-          if (newItems.length === 0) newItems = prev.items;
-        } else {
-          newItems = prev.items.slice(0, -1);
-        }
-        return { ...prev, items: newItems };
-      });
-      setSelectedRowId(null);
+    if (invoice.items.length <= 1) return;
+    
+    let newItems;
+    if (selectedRowId) {
+      newItems = invoice.items.filter(item => item.id !== selectedRowId);
+    } else {
+      newItems = invoice.items.slice(0, -1);
     }
+    
+    setInvoice({ ...invoice, items: newItems.length ? newItems : invoice.items });
+    setSelectedRowId(null);
   };
 
-  // Load existing invoice if we are in Edit Mode
-  useEffect(() => {
-    if (id) {
-      const allInvoices = getInvoices();
-      const existingInvoice = allInvoices.find(inv => String(inv.id) === String(id));
-      if (existingInvoice) {
-        setInvoice(existingInvoice);
-      }
-    }
-  }, [id]);
+  const handleSubmit = (e) => {
+    e.preventDefault();
 
-  const handleSave = () => {
-    if (!invoice.customerId) {
-      toast.error("Enter or select a customer!");
-      return;
+    const newErrors = {};
+    if (!invoice.customerId.trim()) {
+      newErrors.customerId = 'Customer name is required';
     }
     if (!invoice.date) {
-      toast.error("Select an invoice date!");
-      return;
+      newErrors.date = 'Invoice date is required';
     }
     if (!invoice.dueDate) {
-      toast.error("Select a due date!");
+      newErrors.dueDate = 'Due date is required';
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      toast.error('Please fill in all required fields');
       return;
     }
 
-    const existing = getInvoices();
-    let updatedList;
+    const allInvoices = getInvoices();
+    let updated;
 
     if (isEditMode) {
-      // Edit mode: replace the existing invoice
-      updatedList = existing.map(inv => String(inv.id) === String(id) ? invoice : inv);
-      alert("Invoice updated successfully!");
+      updated = allInvoices.map(inv => String(inv.id) === String(id) ? invoice : inv);
     } else {
-      // Create mode: add new invoice
-      updatedList = [...existing, invoice];
-      alert("Invoice created successfully!");
+      updated = [...allInvoices, invoice];
     }
 
-    saveInvoices(updatedList);
+    saveInvoices(updated);
 
     if (onAddCustomer && invoice.customerId) {
-      const existingCustomer = customers.find(
+      const exists = customers.some(
         c => String(c.id) === String(invoice.customerId) || c.name.toLowerCase() === invoice.customerId.toLowerCase()
       );
-      if (!existingCustomer) {
+      if (!exists) {
         onAddCustomer({ 
           name: invoice.customerId, 
           email: invoice.customerEmail, 
@@ -168,11 +173,7 @@ export default function CreateInvoice({ customers = [], onAddCustomer }) {
       }
     }
 
-    if (toast?.success) {
-      toast.success(isEditMode ? "Invoice updated successfully!" : "Invoice created successfully!");
-    } else {
-      alert(isEditMode ? "Invoice updated successfully!" : "Invoice created successfully!");
-    }
+    toast.success(isEditMode ? 'Invoice updated successfully!' : 'Invoice created successfully!');
     navigate('/invoices');
   };
 
@@ -192,11 +193,11 @@ export default function CreateInvoice({ customers = [], onAddCustomer }) {
         </button>
       </div>
 
-      <div className="card" style={{ padding: '24px' }}>
+      <form className="card" onSubmit={handleSubmit} style={{ padding: '24px' }}>
         
         <div className="form-row" style={{ marginBottom: '16px' }}>
           <div className="form-field">
-            <label>Customer Name</label>
+            <label>Customer Name <span className="required">*</span></label>
             <input
               list="customer-list"
               value={invoice.customerId}
@@ -206,6 +207,7 @@ export default function CreateInvoice({ customers = [], onAddCustomer }) {
             <datalist id="customer-list">
               {customers.map(c => <option key={c.id} value={c.name} />)}
             </datalist>
+            {errors.customerId && <span className="field-error">{errors.customerId}</span>}
           </div>
           <div className="form-field">
             <label>Phone Number</label>
@@ -241,24 +243,34 @@ export default function CreateInvoice({ customers = [], onAddCustomer }) {
 
         <div className="form-row" style={{ marginBottom: '24px' }}>
           <div className="form-field">
-            <label>Invoice Date</label>
+            <label>Invoice Date <span className="required">*</span></label>
             <input
               type="date"
               value={invoice.date}
-              onChange={(e) => setInvoice({ ...invoice, date: e.target.value })}
+              onChange={(e) => {
+                setInvoice({ ...invoice, date: e.target.value });
+                if (errors.date) setErrors({ ...errors, date: '' });
+              }}
             />
+            {errors.date && <span className="field-error">{errors.date}</span>}
           </div>
           <div className="form-field">
-            <label>Due Date</label>
+            <label>Due Date <span className="required">*</span></label>
             <input
               type="date"
               value={invoice.dueDate}
-              onChange={(e) => setInvoice({ ...invoice, dueDate: e.target.value })}
+              onChange={(e) => {
+                setInvoice({ ...invoice, dueDate: e.target.value });
+                if (errors.dueDate) setErrors({ ...errors, dueDate: '' });
+              }}
             />
+            {errors.dueDate && <span className="field-error">{errors.dueDate}</span>}
           </div>
         </div>
 
-        <h3 style={{ marginBottom: '16px', borderBottom: '1px solid rgb(38, 43, 54)', paddingBottom: '8px' }}>Item Description</h3>
+        <h3 style={{ marginBottom: '16px', borderBottom: '1px solid rgb(38, 43, 54)', paddingBottom: '8px' }}>
+          Item Description
+        </h3>
 
         {invoice.items.map((item, index) => (
           <div 
@@ -296,21 +308,29 @@ export default function CreateInvoice({ customers = [], onAddCustomer }) {
             <div className="form-field" style={{ marginBottom: 0 }}>
               {index === 0 && <label>Item Description</label>}
               <input
-                type="text" placeholder="Item Description" value={item.description}
+                type="text" 
+                placeholder="Item Description" 
+                value={item.description}
                 onChange={(e) => handleItemChange(index, 'description', e.target.value)}
               />
             </div>
             <div className="form-field" style={{ marginBottom: 0 }}>
               {index === 0 && <label>Quantity</label>}
               <input
-                type="number" min="1" placeholder="Qty" value={item.quantity}
+                type="number" 
+                min="1" 
+                placeholder="Qty" 
+                value={item.quantity}
                 onChange={(e) => handleItemChange(index, 'quantity', e.target.value)}
               />
             </div>
             <div className="form-field" style={{ marginBottom: 0 }}>
               {index === 0 && <label>Price (₹)</label>}
               <input
-                type="number" min="0" placeholder="Price" value={item.price}
+                type="number" 
+                min="0" 
+                placeholder="Price" 
+                value={item.price}
                 onChange={(e) => handleItemChange(index, 'price', e.target.value)}
               />
             </div>
@@ -318,11 +338,12 @@ export default function CreateInvoice({ customers = [], onAddCustomer }) {
         ))}
 
         <div style={{ display: 'flex', gap: '12px', marginBottom: '24px', marginTop: '4px' }}>
-          <button className="btn btn-secondary" onClick={addItemRow}>
+          <button type="button" className="btn btn-secondary" onClick={addItemRow}>
             + Add Item
           </button>
           {invoice.items.length > 1 && (
             <button 
+              type="button" 
               className="btn btn-secondary" 
               onClick={removeSelectedItem} 
               style={{ borderColor: 'rgb(229, 72, 77)', color: 'rgb(229, 72, 77)' }}
@@ -346,14 +367,24 @@ export default function CreateInvoice({ customers = [], onAddCustomer }) {
 
               <div className="form-field" style={{ marginBottom: 0, width: '120px' }}>
                 <label>Tax (%)</label>
-                <input type="number" min="0" value={invoice.tax} onChange={e => setInvoice({ ...invoice, tax: e.target.value })} />
+                <input 
+                  type="number" 
+                  min="0" 
+                  value={invoice.tax} 
+                  onChange={e => setInvoice({ ...invoice, tax: e.target.value })} 
+                />
               </div>
 
               <span style={{ fontSize: '20px', color: 'rgb(107, 114, 128)', marginTop: '18px', fontWeight: 'bold' }}>-</span>
 
               <div className="form-field" style={{ marginBottom: 0, width: '120px' }}>
                 <label>Discount (₹)</label>
-                <input type="number" min="0" value={invoice.discount} onChange={e => setInvoice({ ...invoice, discount: e.target.value })} />
+                <input 
+                  type="number" 
+                  min="0" 
+                  value={invoice.discount} 
+                  onChange={e => setInvoice({ ...invoice, discount: e.target.value })} 
+                />
               </div>
 
               <span style={{ fontSize: '20px', color: 'rgb(107, 114, 128)', marginTop: '18px', fontWeight: 'bold' }}>=</span>
@@ -364,14 +395,19 @@ export default function CreateInvoice({ customers = [], onAddCustomer }) {
               <div style={{ textAlign: 'right', minWidth: '150px' }}>
                 <h2 style={{ color: 'rgb(63, 182, 127)', margin: 0 }}>Total: ₹{invoice.total.toFixed(2)}</h2>
               </div>
-              <button className="btn btn-primary" onClick={handleSave} style={{ padding: '12px 24px', fontSize: '15px' }}>
+              <button 
+                type="submit" 
+                className="btn btn-primary" 
+                style={{ padding: '12px 24px', fontSize: '15px' }}
+              >
                 {isEditMode ? 'Update Invoice' : 'Save Invoice'}
               </button>
             </div>
 
           </div>
         </div>
-      </div>
+
+      </form>
     </div>
   );
 }
