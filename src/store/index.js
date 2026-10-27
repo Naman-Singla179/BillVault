@@ -6,7 +6,7 @@ export const store = configureStore({
   reducer: {
     products: productReducer,
   },
-  devTools: process.env.NODE_ENV !== 'production',
+  devTools: import.meta.env.DEV,
 });
 
 // Auto-sync Redux store with localStorage whenever products change

@@ -7,7 +7,6 @@ export const KEYS = {
   products: "billvault_products",
   business: "billvault_business",
   settings: "billvault_settings",
-  products: "billvault_products",
 };
 
 function safeGet(key, defaultValue) {

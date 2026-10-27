@@ -1,5 +1,3 @@
-import React from 'react';
-
 function PaymentStatus({ status }) {
   const colors = {
     "PAID": "rgb(63, 182, 127)",

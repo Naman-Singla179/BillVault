@@ -3,10 +3,8 @@ import PaymentForm from '../../components/payment/PaymentForm';
 import PaymentHistory from '../../components/payment/PaymentHistory';
 import PaymentMethodChart from '../../components/payment/PaymentMethodChart';
 import { getPayments, getInvoices, getCustomers } from '../../services/storage';
-import { useApp } from "../../context/AppContext";
 
 function Payments() {
-  const { payments: ctxPayments } = useApp();
   const [payments, setPayments] = useState([]);
   const [invoices, setInvoices] = useState([]);
   const [customers, setCustomers] = useState([]);
