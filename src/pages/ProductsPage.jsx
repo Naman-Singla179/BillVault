@@ -1,6 +1,20 @@
-import { useState, useEffect } from 'react'
-import { getProducts, saveProducts } from '../services/storage'
+import { useState } from 'react'
+import { useSelector, useDispatch } from 'react-redux'
+import {
+  selectProducts,
+  selectProductFilters,
+  addProduct,
+  updateProduct,
+  deleteProduct,
+  setSearch,
+  setCategoryFilter,
+  setTypeFilter,
+  setSortBy,
+  setCurrentPage,
+} from '../store/slices/productSlice'
 import { Plus, Search, Edit2, Trash2, X } from 'lucide-react'
+import Modal from '../components/common/Modal'
+import { useToast } from '../context/ToastContext'
 import './ProductsPage.css'
 
 const GST_RATES = [0, 5, 12, 18, 28]
@@ -24,23 +38,17 @@ function formatINR(val) {
 }
 
 function ProductsPage() {
-  const [products, setProducts] = useState(() => getProducts())
-  const [search, setSearch] = useState('')
-  const [categoryFilter, setCategoryFilter] = useState('All')
-  const [typeFilter, setTypeFilter] = useState('All')
-  const [sortBy, setSortBy] = useState('name-asc')
-  const [currentPage, setCurrentPage] = useState(1)
+  const toast = useToast()
+  const dispatch = useDispatch()
+  const products = useSelector(selectProducts)
+  const { search, categoryFilter, typeFilter, sortBy, currentPage } = useSelector(selectProductFilters)
 
   // Modal form state
   const [modalOpen, setModalOpen] = useState(false)
+  const [itemToDelete, setItemToDelete] = useState(null)
   const [editingItem, setEditingItem] = useState(null)
   const [form, setForm] = useState(EMPTY_FORM)
   const [errors, setErrors] = useState({})
-
-  // Persist products on change
-  useEffect(() => {
-    saveProducts(products)
-  }, [products])
 
   // Extract unique categories
   const categories = ['All', ...new Set(products.map((p) => p.category).filter(Boolean))]
@@ -125,33 +133,28 @@ function ProductsPage() {
     }
 
     if (editingItem) {
-      // Preserve original ID when editing
-      setProducts((prev) =>
-        prev.map((item) => (item.id === editingItem.id ? { ...payload, id: editingItem.id } : item))
-      )
+      dispatch(updateProduct({ id: editingItem.id, data: payload }))
+      toast.success(`"${payload.name}" updated successfully!`)
     } else {
-      // Add new item with unique ID
-      const newItem = {
-        id: 'PROD-' + Date.now(),
-        ...payload,
-      }
-      setProducts((prev) => [newItem, ...prev])
+      dispatch(addProduct(payload))
+      toast.success(`"${payload.name}" added to catalog!`)
     }
 
     handleCloseModal()
   }
 
-  function handleDelete(item) {
-    const confirmed = window.confirm(`Delete "${item.name}" from catalog?`)
-    if (confirmed) {
-      setProducts((prev) => prev.filter((p) => p.id !== item.id))
-      // If last item on page deleted, clamp pagination
-      const remainingCount = filteredProducts.length - 1
-      const newTotalPages = Math.max(1, Math.ceil(remainingCount / ITEMS_PER_PAGE))
-      if (currentPage > newTotalPages) {
-        setCurrentPage(newTotalPages)
-      }
+  function handleConfirmDelete() {
+    if (!itemToDelete) return
+    const name = itemToDelete.name
+    dispatch(deleteProduct(itemToDelete.id))
+    toast.success(`"${name}" deleted from catalog!`)
+    // If last item on page deleted, clamp pagination
+    const remainingCount = filteredProducts.length - 1
+    const newTotalPages = Math.max(1, Math.ceil(remainingCount / ITEMS_PER_PAGE))
+    if (currentPage > newTotalPages) {
+      dispatch(setCurrentPage(newTotalPages))
     }
+    setItemToDelete(null)
   }
 
   // Filtering
@@ -194,18 +197,15 @@ function ProductsPage() {
   const paginatedItems = sortedProducts.slice(startIndex, startIndex + ITEMS_PER_PAGE)
 
   function handleSearchChange(e) {
-    setSearch(e.target.value)
-    setCurrentPage(1)
+    dispatch(setSearch(e.target.value))
   }
 
   function handleCategoryChange(e) {
-    setCategoryFilter(e.target.value)
-    setCurrentPage(1)
+    dispatch(setCategoryFilter(e.target.value))
   }
 
   function handleTypeChange(e) {
-    setTypeFilter(e.target.value)
-    setCurrentPage(1)
+    dispatch(setTypeFilter(e.target.value))
   }
 
   return (
@@ -252,7 +252,7 @@ function ProductsPage() {
             <option value="Service">Services only</option>
           </select>
 
-          <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} aria-label="Sort products">
+          <select value={sortBy} onChange={(e) => dispatch(setSortBy(e.target.value))} aria-label="Sort products">
             <option value="name-asc">Sort by: Name A-Z</option>
             <option value="name-desc">Sort by: Name Z-A</option>
             <option value="price-asc">Sort by: Price: Low to High</option>
@@ -341,7 +341,7 @@ function ProductsPage() {
                     <button
                       type="button"
                       className="card-action-btn btn-delete"
-                      onClick={() => handleDelete(item)}
+                      onClick={() => setItemToDelete(item)}
                       aria-label={`Delete ${item.name}`}
                       title="Delete"
                     >
@@ -364,7 +364,7 @@ function ProductsPage() {
               <button
                 type="button"
                 className="pagination-btn"
-                onClick={() => setCurrentPage(validCurrentPage - 1)}
+                onClick={() => dispatch(setCurrentPage(validCurrentPage - 1))}
                 disabled={validCurrentPage <= 1}
                 aria-label="Previous page"
               >
@@ -376,7 +376,7 @@ function ProductsPage() {
                   key={pageNum}
                   type="button"
                   className={`pagination-pill ${validCurrentPage === pageNum ? 'active' : ''}`}
-                  onClick={() => setCurrentPage(pageNum)}
+                  onClick={() => dispatch(setCurrentPage(pageNum))}
                   aria-label={`Go to page ${pageNum}`}
                   aria-current={validCurrentPage === pageNum ? 'page' : undefined}
                 >
@@ -387,7 +387,7 @@ function ProductsPage() {
               <button
                 type="button"
                 className="pagination-btn"
-                onClick={() => setCurrentPage(validCurrentPage + 1)}
+                onClick={() => dispatch(setCurrentPage(validCurrentPage + 1))}
                 disabled={validCurrentPage >= totalPages}
                 aria-label="Next page"
               >
@@ -548,6 +548,24 @@ function ProductsPage() {
           </div>
         </div>
       )}
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={Boolean(itemToDelete)}
+        onClose={() => setItemToDelete(null)}
+        title="Delete Item"
+        onConfirm={handleConfirmDelete}
+        confirmText="Delete"
+        cancelText="Cancel"
+        danger={true}
+      >
+        <p style={{ margin: 0, lineHeight: 1.6, color: 'rgb(209, 213, 219)', fontSize: '14px' }}>
+          Are you sure you want to delete <strong style={{ color: 'rgb(233, 234, 238)' }}>{itemToDelete?.name}</strong> from catalog?
+        </p>
+        <p style={{ margin: '8px 0 0', fontSize: '13px', color: 'rgb(154, 161, 175)' }}>
+          This will permanently remove this item from your product catalog.
+        </p>
+      </Modal>
     </div>
   )
 }

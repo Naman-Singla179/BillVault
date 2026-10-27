@@ -6,14 +6,18 @@ import {
   calculateTotalPaid, 
   calculatePaymentStatus 
 } from '../../utils/paymentUtils';
+import Modal from '../../components/common/Modal';
+import { useToast } from '../../context/ToastContext';
 import './Invoices.css';
 
 export default function Invoices() {
   const navigate = useNavigate();
+  const toast = useToast();
 
   const [invoices, setInvoices] = useState([]);
   const [customers, setCustomers] = useState([]);
   const [payments, setPayments] = useState([]);
+  const [invoiceToDelete, setInvoiceToDelete] = useState(null);
 
   const [activeTab, setActiveTab] = useState('ALL');
   const [searchTerm, setSearchTerm] = useState('');
@@ -61,17 +65,18 @@ export default function Invoices() {
     const updated = [duplicatedInvoice, ...invoices];
     saveInvoices(updated);
     setInvoices(updated);
-    alert(`Invoice ${invToCopy.id} duplicated successfully as ${newId}!`);
+    toast.success(`Invoice ${invToCopy.id} duplicated successfully as ${newId}!`);
   }
 
-  function handleDelete(idToDelete) {
-    const confirmDelete = window.confirm(`Are you sure you want to delete invoice ${idToDelete}?`);
-    if (!confirmDelete) return;
+  function handleConfirmDelete() {
+    if (!invoiceToDelete) return;
 
+    const idToDelete = invoiceToDelete.id;
     const updated = invoices.filter(inv => String(inv.id) !== String(idToDelete));
     saveInvoices(updated);
     setInvoices(updated);
-    alert('Invoice deleted successfully!');
+    toast.success(`Invoice ${formatInvoiceId(idToDelete)} deleted successfully!`);
+    setInvoiceToDelete(null);
   }
 
   const allCount = invoices.length;
@@ -323,7 +328,7 @@ export default function Invoices() {
                         <button
                           className="action-btn-sm action-btn-danger"
                           title="Delete Invoice"
-                          onClick={() => handleDelete(inv.id)}
+                          onClick={() => setInvoiceToDelete(inv)}
                         >
                           Delete
                         </button>
@@ -336,6 +341,28 @@ export default function Invoices() {
           </table>
         )}
       </div>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={Boolean(invoiceToDelete)}
+        onClose={() => setInvoiceToDelete(null)}
+        title="Delete Invoice"
+        onConfirm={handleConfirmDelete}
+        confirmText="Delete"
+        cancelText="Cancel"
+        danger={true}
+      >
+        <p style={{ margin: 0, lineHeight: 1.6, color: 'rgb(209, 213, 219)', fontSize: '14px' }}>
+          Are you sure you want to delete invoice{' '}
+          <strong style={{ color: 'rgb(233, 234, 238)' }}>
+            {invoiceToDelete ? formatInvoiceId(invoiceToDelete.id) : ''}
+          </strong>
+          {invoiceToDelete?.customerId ? ` for ${getCustomerName(invoiceToDelete.customerId)}` : ''}?
+        </p>
+        <p style={{ margin: '8px 0 0', fontSize: '13px', color: 'rgb(154, 161, 175)' }}>
+          This action cannot be undone. All invoice details will be permanently removed.
+        </p>
+      </Modal>
     </div>
   );
 }

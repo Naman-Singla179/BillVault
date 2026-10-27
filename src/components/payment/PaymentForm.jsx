@@ -142,8 +142,20 @@ function PaymentForm({ onPaymentAdded }) {
           <label>Payment Date</label>
           <input
             type="date"
+            min="2000-01-01"
+            max="2099-12-31"
             value={date}
-            onChange={(e) => setDate(e.target.value)}
+            onChange={(e) => {
+              let val = e.target.value;
+              if (val) {
+                const parts = val.split('-');
+                if (parts[0] && parts[0].length > 4) {
+                  parts[0] = parts[0].slice(0, 4);
+                  val = parts.join('-');
+                }
+              }
+              setDate(val);
+            }}
           />
         </div>
       </div>

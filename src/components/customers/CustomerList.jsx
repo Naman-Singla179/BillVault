@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getInvoices, getPayments } from '../../services/storage'
 import { calculateTotalPaid, calculatePaymentStatus } from '../../utils/paymentUtils'
+import Modal from '../common/Modal'
+import { useToast } from '../../context/ToastContext'
 import './CustomerList.css'
 
 // Number of customer records to display per page
@@ -95,7 +97,9 @@ function matchesCustomerName(customerName, term) {
 function CustomerList({ customers, onEdit, onDelete }) {
   const [query, setQuery] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
+  const [customerToDelete, setCustomerToDelete] = useState(null)
   const navigate = useNavigate()
+  const toast = useToast()
 
   const invoices = getInvoices()
   const payments = getPayments()
@@ -123,16 +127,16 @@ function CustomerList({ customers, onEdit, onDelete }) {
     setCurrentPage(1) // Reset pagination to page 1 whenever search query changes
   }
 
-  function handleDelete(customer) {
-    const confirmed = window.confirm(`Delete customer "${customer.name}"?`)
-    if (confirmed) {
-      onDelete(customer.id)
-      const remainingCount = filtered.length - 1
-      const newTotalPages = Math.max(1, Math.ceil(remainingCount / ITEMS_PER_PAGE))
-      if (currentPage > newTotalPages) {
-        setCurrentPage(newTotalPages)
-      }
+  function handleConfirmDelete() {
+    if (!customerToDelete) return
+    onDelete(customerToDelete.id)
+    toast.success(`Customer "${customerToDelete.name}" deleted successfully!`)
+    const remainingCount = filtered.length - 1
+    const newTotalPages = Math.max(1, Math.ceil(remainingCount / ITEMS_PER_PAGE))
+    if (currentPage > newTotalPages) {
+      setCurrentPage(newTotalPages)
     }
+    setCustomerToDelete(null)
   }
 
   function getCustomerStatus(customer) {
@@ -231,7 +235,7 @@ function CustomerList({ customers, onEdit, onDelete }) {
                           type="button"
                           className="btn-icon"
                           aria-label={`Delete ${customer.name}`}
-                          onClick={() => handleDelete(customer)}
+                          onClick={() => setCustomerToDelete(customer)}
                         >
                           Delete
                         </button>
@@ -284,6 +288,24 @@ function CustomerList({ customers, onEdit, onDelete }) {
           </div>
         </>
       )}
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={Boolean(customerToDelete)}
+        onClose={() => setCustomerToDelete(null)}
+        title="Delete Customer"
+        onConfirm={handleConfirmDelete}
+        confirmText="Delete"
+        cancelText="Cancel"
+        danger={true}
+      >
+        <p style={{ margin: 0, lineHeight: 1.6, color: 'rgb(209, 213, 219)', fontSize: '14px' }}>
+          Are you sure you want to delete customer <strong style={{ color: 'rgb(233, 234, 238)' }}>{customerToDelete?.name}</strong>?
+        </p>
+        <p style={{ margin: '8px 0 0', fontSize: '13px', color: 'rgb(154, 161, 175)' }}>
+          This action cannot be undone. Customer data will be removed.
+        </p>
+      </Modal>
     </div>
   )
 }

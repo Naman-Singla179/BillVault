@@ -66,9 +66,23 @@ function CustomerForm({ initialData, onSave, onCancel }) {
         <input
           id="customer-phone"
           type="tel"
+          inputMode="numeric"
+          pattern="[0-9]*"
+          maxLength={10}
           value={form.phone}
-          onChange={(e) => handleChange('phone', e.target.value)}
-          placeholder="e.g. 98765 43210"
+          onKeyDown={(e) => {
+            if (
+              ['Backspace', 'Delete', 'Tab', 'Escape', 'Enter', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key) ||
+              (e.ctrlKey || e.metaKey)
+            ) {
+              return;
+            }
+            if (!/^[0-9]$/.test(e.key)) {
+              e.preventDefault();
+            }
+          }}
+          onChange={(e) => handleChange('phone', e.target.value.replace(/\D/g, '').slice(0, 10))}
+          placeholder="10-digit number (e.g. 9876543210)"
         />
         {errors.phone && <span className="field-error">{errors.phone}</span>}
       </div>

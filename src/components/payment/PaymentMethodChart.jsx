@@ -11,10 +11,6 @@ const DEFAULT_METHODS = [
 
 const OTHER_COLOR = 'rgb(148, 163, 184)';
 
-const RADIUS = 68;
-const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
-const STROKE_WIDTH = 22;
-
 function roundMoney(num) {
   return Math.round((Number(num) || 0) * 100) / 100;
 }
@@ -31,7 +27,7 @@ function normalizeMethod(raw) {
 function PaymentMethodChart({ payments: propPayments }) {
   const { payments: ctxPayments } = useApp();
 
-  const { breakdown, totalCollected, totalPayments, ariaLabel, segments } = useMemo(() => {
+  const { breakdown, totalCollected, totalPayments } = useMemo(() => {
     const rawPayments = propPayments ?? ctxPayments ?? [];
 
     const methodTotals = {
@@ -73,131 +69,62 @@ function PaymentMethodChart({ payments: propPayments }) {
       };
     });
 
-    let description;
-    if (totalCount === 0) {
-      description = 'Payment method breakdown: No payments recorded. Total collected: ₹0.00.';
-    } else {
-      const summaryItems = computedBreakdown
-        .filter((item) => item.count > 0)
-        .map((item) => `${item.method}: ₹${item.amount.toFixed(2)} (${item.percentage.toFixed(1)}%, ${item.count} ${item.count === 1 ? 'payment' : 'payments'})`);
-      description = `Payment method breakdown: ${summaryItems.join(', ')}. Total collected: ₹${totalAmt.toFixed(2)} across ${totalCount} ${totalCount === 1 ? 'payment' : 'payments'}.`;
-    }
-
-    const computedSegments = [];
-    let accumulatedStroke = 0;
-    const eligibleItems = computedBreakdown.filter((item) => item.amount > 0 && totalAmt > 0);
-    for (let i = 0; i < eligibleItems.length; i += 1) {
-      const item = eligibleItems[i];
-      const fraction = item.amount / totalAmt;
-      const strokeLength = fraction * CIRCUMFERENCE;
-      computedSegments.push({
-        ...item,
-        strokeLength,
-        strokeOffset: accumulatedStroke,
-      });
-      accumulatedStroke += strokeLength;
-    }
-
     return {
       breakdown: computedBreakdown,
       totalCollected: totalAmt,
       totalPayments: totalCount,
-      ariaLabel: description,
-      segments: computedSegments,
     };
   }, [propPayments, ctxPayments]);
 
   return (
     <div className="card payment-methods-card">
-      <h2 className="payment-methods-title">Payment Methods</h2>
+      <div className="payment-methods-header">
+        <h2 className="payment-methods-title">Payment Methods</h2>
+        {totalPayments > 0 && (
+          <span className="payment-methods-total">
+            Total Collected: <strong>₹{totalCollected.toFixed(2)}</strong>
+          </span>
+        )}
+      </div>
 
       <div className="payment-methods-body">
-        <div className="payment-methods-chart-pane">
-          {totalPayments === 0 ? (
-            <div className="empty-state payment-chart-empty">
-              <p>No payments yet</p>
-            </div>
-          ) : (
-            <svg
-              role="img"
-              aria-label={ariaLabel}
-              viewBox="0 0 200 200"
-              className="payment-donut-svg"
-            >
-              <circle
-                cx="100"
-                cy="100"
-                r={RADIUS}
-                fill="none"
-                stroke="rgb(38, 43, 54)"
-                strokeWidth={STROKE_WIDTH}
-              />
-
-              <g transform="rotate(-90 100 100)">
-                {segments.map((seg) => (
-                  <circle
-                    key={seg.method}
-                    cx="100"
-                    cy="100"
-                    r={RADIUS}
-                    fill="none"
-                    stroke={seg.color}
-                    strokeWidth={STROKE_WIDTH}
-                    strokeDasharray={
-                      segments.length === 1
-                        ? `${CIRCUMFERENCE + 1} ${CIRCUMFERENCE}`
-                        : `${seg.strokeLength} ${CIRCUMFERENCE}`
-                    }
-                    strokeDashoffset={-seg.strokeOffset}
-                  >
-                    <title>
-                      {`${seg.method}: ₹${seg.amount.toFixed(2)} (${seg.percentage.toFixed(1)}%)`}
-                    </title>
-                  </circle>
-                ))}
-              </g>
-
-              <text x="100" y="94" textAnchor="middle" className="payment-donut-total">
-                ₹{totalCollected.toFixed(2)}
-              </text>
-              <text x="100" y="114" textAnchor="middle" className="payment-donut-label">
-                Collected
-              </text>
-            </svg>
-          )}
-        </div>
-
-        <ul className="payment-legend" aria-label="Payment methods legend">
-          {breakdown.map((item) => {
-            const isMuted = item.count === 0;
-            return (
-              <li
-                key={item.method}
-                className={`payment-legend-row ${isMuted ? 'payment-legend-row-muted' : ''}`}
-              >
-                <div className="payment-legend-item-header">
-                  <span
-                    className="payment-legend-dot"
-                    style={{ backgroundColor: item.color }}
-                    aria-hidden="true"
-                  />
-                  <span className="payment-legend-name">{item.method}</span>
-                </div>
-                <div className="payment-legend-item-data">
-                  <span className="payment-legend-amount">
-                    ₹{item.amount.toFixed(2)}
-                  </span>
-                  <span className="payment-legend-count">
-                    {item.count} {item.count === 1 ? 'payment' : 'payments'}
-                  </span>
-                  <span className="payment-legend-percentage">
-                    {item.percentage.toFixed(1)}%
-                  </span>
-                </div>
-              </li>
-            );
-          })}
-        </ul>
+        {totalPayments === 0 ? (
+          <div className="empty-state payment-chart-empty">
+            <p>No payments recorded yet</p>
+          </div>
+        ) : (
+          <ul className="payment-legend" aria-label="Payment methods breakdown">
+            {breakdown.map((item) => {
+              const isMuted = item.count === 0;
+              return (
+                <li
+                  key={item.method}
+                  className={`payment-legend-row ${isMuted ? 'payment-legend-row-muted' : ''}`}
+                >
+                  <div className="payment-legend-item-header">
+                    <span
+                      className="payment-legend-dot"
+                      style={{ backgroundColor: item.color }}
+                      aria-hidden="true"
+                    />
+                    <span className="payment-legend-name">{item.method}</span>
+                  </div>
+                  <div className="payment-legend-item-data">
+                    <span className="payment-legend-amount">
+                      ₹{item.amount.toFixed(2)}
+                    </span>
+                    <span className="payment-legend-count">
+                      {item.count} {item.count === 1 ? 'payment' : 'payments'}
+                    </span>
+                    <span className="payment-legend-percentage">
+                      {item.percentage.toFixed(1)}%
+                    </span>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        )}
       </div>
     </div>
   );

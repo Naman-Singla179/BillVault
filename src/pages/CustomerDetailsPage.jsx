@@ -2,12 +2,16 @@ import { useState } from 'react'
 import { useNavigate, useParams, Link } from 'react-router-dom'
 import CustomerForm from '../components/customers/CustomerForm'
 import { getInvoices, getPayments } from '../services/storage'
+import Modal from '../components/common/Modal'
+import { useToast } from '../context/ToastContext'
 import './CustomerDetailsPage.css'
 
 function CustomerDetailsPage({ customers, onUpdate, onDelete }) {
   const { id } = useParams()
   const navigate = useNavigate()
+  const toast = useToast()
   const [editing, setEditing] = useState(false)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [invoices] = useState(() => getInvoices())
   const [payments] = useState(() => getPayments())
 
@@ -31,12 +35,11 @@ function CustomerDetailsPage({ customers, onUpdate, onDelete }) {
     setEditing(false)
   }
 
-  function handleDelete() {
-    const confirmed = window.confirm(`Delete customer "${customer.name}"?`)
-    if (confirmed) {
-      onDelete(customer.id)
-      navigate('/customers')
-    }
+  function handleConfirmDelete() {
+    onDelete(customer.id)
+    toast.success(`Customer "${customer.name}" deleted successfully!`)
+    setShowDeleteModal(false)
+    navigate('/customers')
   }
 
   return (
@@ -53,7 +56,7 @@ function CustomerDetailsPage({ customers, onUpdate, onDelete }) {
             <button type="button" className="btn btn-secondary" onClick={() => setEditing(true)}>
               Edit
             </button>
-            <button type="button" className="btn btn-danger" onClick={handleDelete}>
+            <button type="button" className="btn btn-danger" onClick={() => setShowDeleteModal(true)}>
               Delete
             </button>
           </div>
@@ -110,6 +113,24 @@ function CustomerDetailsPage({ customers, onUpdate, onDelete }) {
           </div>
         </div>
       )}
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        title="Delete Customer"
+        onConfirm={handleConfirmDelete}
+        confirmText="Delete"
+        cancelText="Cancel"
+        danger={true}
+      >
+        <p style={{ margin: 0, lineHeight: 1.6, color: 'rgb(209, 213, 219)', fontSize: '14px' }}>
+          Are you sure you want to delete customer <strong style={{ color: 'rgb(233, 234, 238)' }}>{customer.name}</strong>?
+        </p>
+        <p style={{ margin: '8px 0 0', fontSize: '13px', color: 'rgb(154, 161, 175)' }}>
+          This will permanently delete the customer record and remove them from your active accounts.
+        </p>
+      </Modal>
     </div>
   )
 }
