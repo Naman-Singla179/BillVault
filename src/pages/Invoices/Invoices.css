@@ -270,3 +270,120 @@
 .invoices-empty p {
   margin-bottom: 20px;
 }
+
+/* Invoices Pagination Styles */
+.invoices-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-top: 1px solid rgb(38, 43, 54);
+  background: rgb(20, 23, 30);
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.pagination-info {
+  font-size: 13px;
+  color: rgb(154, 161, 175);
+}
+
+.pagination-info strong {
+  color: rgb(233, 234, 238);
+}
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.pagination-pills {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.pagination-pill {
+  min-width: 32px;
+  height: 32px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: transparent;
+  border: 1px solid rgb(51, 57, 71);
+  color: rgb(233, 234, 238);
+  font-size: 13px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.pagination-pill:hover:not(.active) {
+  background: rgb(32, 36, 47);
+  border-color: rgb(107, 114, 128);
+}
+
+.pagination-pill.active {
+  background: rgb(217, 164, 65);
+  border-color: rgb(217, 164, 65);
+  color: rgb(26, 19, 5);
+  cursor: default;
+}
+
+.pagination-ellipsis {
+  color: rgb(107, 114, 128);
+  font-size: 13px;
+  padding: 0 4px;
+  user-select: none;
+}
+
+.pagination-btn {
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: transparent;
+  border: 1px solid rgb(51, 57, 71);
+  color: rgb(233, 234, 238);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  background: rgb(32, 36, 47);
+  border-color: rgb(107, 114, 128);
+}
+
+.pagination-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  border-color: rgb(38, 43, 54);
+}
+
+.pagination-pill:focus-visible,
+.pagination-btn:focus-visible {
+  outline: 2px solid rgb(217, 164, 65);
+  outline-offset: 2px;
+}
+
+@media (max-width: 640px) {
+  .invoices-pagination {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 12px;
+  }
+
+  .pagination-controls {
+    justify-content: center;
+  }
+}

@@ -10,6 +10,25 @@ import Modal from '../../components/common/Modal';
 import { useToast } from '../../context/ToastContext';
 import './Invoices.css';
 
+/**
+ * Generates an array of page numbers and ellipsis indicators for pagination controls.
+ * e.g. [1, 2, 3, 4, 5, '...', 20] or [1, '...', 5, 6, 7, '...', 20]
+ */
+function getPaginationItems(current, total) {
+  if (total <= 7) {
+    return Array.from({ length: total }, (_, i) => i + 1);
+  }
+  if (current <= 4) {
+    return [1, 2, 3, 4, 5, '...', total];
+  }
+  if (current >= total - 3) {
+    return [1, '...', total - 4, total - 3, total - 2, total - 1, total];
+  }
+  return [1, '...', current - 1, current, current + 1, '...', total];
+}
+
+const ITEMS_PER_PAGE = 10;
+
 export default function Invoices() {
   const navigate = useNavigate();
   const toast = useToast();
@@ -24,6 +43,9 @@ export default function Invoices() {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [sortBy, setSortBy] = useState('DATE_DESC');
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     setInvoices(getInvoices());
@@ -65,6 +87,7 @@ export default function Invoices() {
     const updated = [duplicatedInvoice, ...invoices];
     saveInvoices(updated);
     setInvoices(updated);
+    setCurrentPage(1);
     toast.success(`Invoice ${invToCopy.id} duplicated successfully as ${newId}!`);
   }
 
@@ -75,8 +98,49 @@ export default function Invoices() {
     const updated = invoices.filter(inv => String(inv.id) !== String(idToDelete));
     saveInvoices(updated);
     setInvoices(updated);
+
+    const remainingFilteredCount = filteredInvoices.filter(inv => String(inv.id) !== String(idToDelete)).length;
+    const newTotalPages = Math.max(1, Math.ceil(remainingFilteredCount / ITEMS_PER_PAGE));
+    if (currentPage > newTotalPages) {
+      setCurrentPage(newTotalPages);
+    }
+
     toast.success(`Invoice ${formatInvoiceId(idToDelete)} deleted successfully!`);
     setInvoiceToDelete(null);
+  }
+
+  function handleTabChange(tab) {
+    setActiveTab(tab);
+    setCurrentPage(1);
+  }
+
+  function handleSearchChange(e) {
+    setSearchTerm(e.target.value);
+    setCurrentPage(1);
+  }
+
+  function handleStartDateChange(e) {
+    setStartDate(e.target.value);
+    setCurrentPage(1);
+  }
+
+  function handleEndDateChange(e) {
+    setEndDate(e.target.value);
+    setCurrentPage(1);
+  }
+
+  function handleSortChange(e) {
+    setSortBy(e.target.value);
+    setCurrentPage(1);
+  }
+
+  function resetFilters() {
+    setSearchTerm('');
+    setStartDate('');
+    setEndDate('');
+    setActiveTab('ALL');
+    setSortBy('DATE_DESC');
+    setCurrentPage(1);
   }
 
   const allCount = invoices.length;
@@ -117,15 +181,14 @@ export default function Invoices() {
     return 0;
   });
 
-  function resetFilters() {
-    setSearchTerm('');
-    setStartDate('');
-    setEndDate('');
-    setActiveTab('ALL');
-    setSortBy('DATE_DESC');
-  }
-
   const hasActiveFilters = searchTerm !== '' || startDate !== '' || endDate !== '' || activeTab !== 'ALL' || sortBy !== 'DATE_DESC';
+
+  // Pagination computations
+  const totalPages = Math.max(1, Math.ceil(filteredInvoices.length / ITEMS_PER_PAGE));
+  const validCurrentPage = Math.min(Math.max(1, currentPage), totalPages);
+  const startIndex = (validCurrentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = Math.min(startIndex + ITEMS_PER_PAGE, filteredInvoices.length);
+  const paginatedInvoices = filteredInvoices.slice(startIndex, endIndex);
 
   return (
     <div className="invoices-page page">
@@ -149,31 +212,31 @@ export default function Invoices() {
           <div className="invoices-tabs">
             <button 
               className={`tab-button ${activeTab === 'ALL' ? 'active' : ''}`}
-              onClick={() => setActiveTab('ALL')}
+              onClick={() => handleTabChange('ALL')}
             >
               All <span className="tab-badge">{allCount}</span>
             </button>
             <button 
               className={`tab-button ${activeTab === 'PAID' ? 'active' : ''}`}
-              onClick={() => setActiveTab('PAID')}
+              onClick={() => handleTabChange('PAID')}
             >
               Paid <span className="tab-badge">{paidCount}</span>
             </button>
             <button 
               className={`tab-button ${activeTab === 'PENDING' ? 'active' : ''}`}
-              onClick={() => setActiveTab('PENDING')}
+              onClick={() => handleTabChange('PENDING')}
             >
               Pending <span className="tab-badge">{pendingCount}</span>
             </button>
             <button 
               className={`tab-button ${activeTab === 'OVERDUE' ? 'active' : ''}`}
-              onClick={() => setActiveTab('OVERDUE')}
+              onClick={() => handleTabChange('OVERDUE')}
             >
               Overdue <span className="tab-badge">{overdueCount}</span>
             </button>
             <button 
               className={`tab-button ${activeTab === 'DRAFT' ? 'active' : ''}`}
-              onClick={() => setActiveTab('DRAFT')}
+              onClick={() => handleTabChange('DRAFT')}
             >
               Draft <span className="tab-badge">{draftCount}</span>
             </button>
@@ -184,7 +247,7 @@ export default function Invoices() {
               type="text"
               placeholder="Search by customer or invoice #..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={handleSearchChange}
             />
           </div>
         </div>
@@ -195,14 +258,14 @@ export default function Invoices() {
             <input 
               type="date" 
               value={startDate} 
-              onChange={(e) => setStartDate(e.target.value)}
+              onChange={handleStartDateChange}
               title="Start Date"
             />
             <span>to</span>
             <input 
               type="date" 
               value={endDate} 
-              onChange={(e) => setEndDate(e.target.value)}
+              onChange={handleEndDateChange}
               title="End Date"
             />
           </div>
@@ -210,7 +273,7 @@ export default function Invoices() {
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
             <div className="sort-group">
               <span>Sort By:</span>
-              <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+              <select value={sortBy} onChange={handleSortChange}>
                 <option value="DATE_DESC">Date (Newest First)</option>
                 <option value="DATE_ASC">Date (Oldest First)</option>
                 <option value="AMOUNT_DESC">Amount (Highest First)</option>
@@ -252,93 +315,143 @@ export default function Invoices() {
             )}
           </div>
         ) : (
-          <table className="invoices-table">
-            <thead>
-              <tr>
-                <th>Invoice #</th>
-                <th>Customer</th>
-                <th>Issue Date</th>
-                <th>Due Date</th>
-                <th>Total</th>
-                <th>Status</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredInvoices.map((inv) => {
-                const status = getInvoiceStatus(inv);
-                const isPaid = status === 'PAID';
+          <>
+            <table className="invoices-table">
+              <thead>
+                <tr>
+                  <th>Invoice #</th>
+                  <th>Customer</th>
+                  <th>Issue Date</th>
+                  <th>Due Date</th>
+                  <th>Total</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {paginatedInvoices.map((inv) => {
+                  const status = getInvoiceStatus(inv);
+                  const isPaid = status === 'PAID';
 
-                return (
-                  <tr key={inv.id}>
-                    <td>
-                      <span className="invoice-id-badge">
-                        {formatInvoiceId(inv.id)}
-                      </span>
-                    </td>
-                    <td>
-                      <strong>{getCustomerName(inv.customerId)}</strong>
-                    </td>
-                    <td>{inv.date || '—'}</td>
-                    <td>{inv.dueDate || '—'}</td>
-                    <td>
-                      <strong>₹{Number(inv.total || 0).toFixed(2)}</strong>
-                    </td>
-                    <td>
-                      <span className={`status-pill status-${status.toLowerCase().replace(/\s+/g, '-')}`}>
-                        {status}
-                      </span>
-                    </td>
-                    <td>
-                      <div className="table-actions">
-                        <button
-                          className="action-btn-sm"
-                          title="Edit Invoice"
-                          onClick={() => navigate(`/invoices/edit/${inv.id}`)}
-                        >
-                          Edit
-                        </button>
-
-                        <button
-                          className="action-btn-sm"
-                          title="Duplicate Invoice"
-                          onClick={() => handleDuplicate(inv)}
-                        >
-                          Duplicate
-                        </button>
-
-                        {!isPaid && (
+                  return (
+                    <tr key={inv.id}>
+                      <td>
+                        <span className="invoice-id-badge">
+                          {formatInvoiceId(inv.id)}
+                        </span>
+                      </td>
+                      <td>
+                        <strong>{getCustomerName(inv.customerId)}</strong>
+                      </td>
+                      <td>{inv.date || '—'}</td>
+                      <td>{inv.dueDate || '—'}</td>
+                      <td>
+                        <strong>₹{Number(inv.total || 0).toFixed(2)}</strong>
+                      </td>
+                      <td>
+                        <span className={`status-pill status-${status.toLowerCase().replace(/\s+/g, '-')}`}>
+                          {status}
+                        </span>
+                      </td>
+                      <td>
+                        <div className="table-actions">
                           <button
                             className="action-btn-sm"
-                            title="Record Payment"
-                            onClick={() => navigate('/payments', { state: { invoiceId: inv.id, amount: inv.total } })}
+                            title="Edit Invoice"
+                            onClick={() => navigate(`/invoices/edit/${inv.id}`)}
                           >
-                            Pay
+                            Edit
                           </button>
-                        )}
 
-                        <button
-                          className="action-btn-sm"
-                          title="View Preview"
-                          onClick={() => navigate('/invoice-preview', { state: { invoiceId: inv.id } })}
-                        >
-                          View
-                        </button>
+                          <button
+                            className="action-btn-sm"
+                            title="Duplicate Invoice"
+                            onClick={() => handleDuplicate(inv)}
+                          >
+                            Duplicate
+                          </button>
 
-                        <button
-                          className="action-btn-sm action-btn-danger"
-                          title="Delete Invoice"
-                          onClick={() => setInvoiceToDelete(inv)}
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                          {!isPaid && (
+                            <button
+                              className="action-btn-sm"
+                              title="Record Payment"
+                              onClick={() => navigate('/payments', { state: { invoiceId: inv.id, amount: inv.total } })}
+                            >
+                              Pay
+                            </button>
+                          )}
+
+                          <button
+                            className="action-btn-sm"
+                            title="View Preview"
+                            onClick={() => navigate('/invoice-preview', { state: { invoiceId: inv.id } })}
+                          >
+                            View
+                          </button>
+
+                          <button
+                            className="action-btn-sm action-btn-danger"
+                            title="Delete Invoice"
+                            onClick={() => setInvoiceToDelete(inv)}
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+
+            <div className="invoices-pagination">
+              <div className="pagination-info">
+                Showing <strong>{startIndex + 1}</strong>–<strong>{endIndex}</strong> of <strong>{filteredInvoices.length}</strong> {filteredInvoices.length === 1 ? 'invoice' : 'invoices'}
+              </div>
+
+              <div className="pagination-controls">
+                <button
+                  type="button"
+                  className="pagination-btn"
+                  onClick={() => setCurrentPage(validCurrentPage - 1)}
+                  disabled={validCurrentPage <= 1}
+                  aria-label="Previous page"
+                >
+                  Previous
+                </button>
+
+                <div className="pagination-pills">
+                  {getPaginationItems(validCurrentPage, totalPages).map((item, idx) => {
+                    if (item === '...') {
+                      return <span key={`ellipsis-${idx}`} className="pagination-ellipsis">…</span>;
+                    }
+                    return (
+                      <button
+                        key={item}
+                        type="button"
+                        className={`pagination-pill ${validCurrentPage === item ? 'active' : ''}`}
+                        onClick={() => setCurrentPage(item)}
+                        aria-label={`Go to page ${item}`}
+                        aria-current={validCurrentPage === item ? 'page' : undefined}
+                      >
+                        {item}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <button
+                  type="button"
+                  className="pagination-btn"
+                  onClick={() => setCurrentPage(validCurrentPage + 1)}
+                  disabled={validCurrentPage >= totalPages}
+                  aria-label="Next page"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          </>
         )}
       </div>
 
