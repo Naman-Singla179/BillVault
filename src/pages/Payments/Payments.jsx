@@ -1,26 +1,15 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import PaymentForm from '../../components/payment/PaymentForm';
 import PaymentHistory from '../../components/payment/PaymentHistory';
 import PaymentMethodChart from '../../components/payment/PaymentMethodChart';
-import { getPayments, getInvoices, getCustomers } from '../../services/storage';
+import { useApp } from '../../context/AppContext';
 
 function Payments() {
-  const [payments, setPayments] = useState([]);
-  const [invoices, setInvoices] = useState([]);
-  const [customers, setCustomers] = useState([]);
+  const { payments: rawPayments, invoices, customers } = useApp();
   const [showAllPayments, setShowAllPayments] = useState(false);
 
-  function loadPayments() {
-    const saved = getPayments();
-    const sorted = [...saved].reverse();
-    setPayments(sorted);
-    setInvoices(getInvoices());
-    setCustomers(getCustomers());
-  }
-
-  useEffect(() => {
-    loadPayments();
-  }, []);
+  // Most-recent-first, matching the original sorted order
+  const payments = [...rawPayments].reverse();
 
   const displayedPayments = showAllPayments ? payments : payments.slice(0, 5);
 
@@ -32,7 +21,7 @@ function Payments() {
           <p>Record and track your incoming payments.</p>
         </div>
       </div>
-      <PaymentForm onPaymentAdded={loadPayments} />
+      <PaymentForm />
 
       <PaymentMethodChart />
 
@@ -46,10 +35,10 @@ function Payments() {
           )}
         </div>
 
-        <PaymentHistory 
-          payments={displayedPayments} 
-          invoices={invoices} 
-          customers={customers} 
+        <PaymentHistory
+          payments={displayedPayments}
+          invoices={invoices}
+          customers={customers}
         />
       </section>
     </div>

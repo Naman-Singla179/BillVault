@@ -196,6 +196,7 @@ export function AppProvider({ children }) {
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 }
 
+// eslint-disable-next-line react-refresh/only-export-components -- hook is exported next to its provider on purpose
 export function useApp() {
   const context = useContext(AppContext);
   if (!context) {

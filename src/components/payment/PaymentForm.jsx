@@ -1,35 +1,20 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useLocation } from "react-router-dom";
-import { getPayments, savePayments, getInvoices, getCustomers } from "../../services/storage";
 import { formatInvoiceId, calculateTotalPaid } from "../../utils/paymentUtils";
+import { useApp } from "../../context/AppContext";
 import { useToast } from "../../context/ToastContext";
 import UpiQrCode from "./UpiQrCode";
 
 function PaymentForm({ onPaymentAdded }) {
   const location = useLocation();
   const toast = useToast();
+  const { invoices: allInvoices, customers, payments, addPayment } = useApp();
+
   const [selectedInvoice, setSelectedInvoice] = useState(location.state?.invoiceId || "");
   const [amount, setAmount] = useState(location.state?.amount || "");
   const [method, setMethod] = useState("Cash");
   const [date, setDate] = useState("");
   const [error, setError] = useState("");
-  const [allInvoices, setAllInvoices] = useState([]);
-  const [customers, setCustomers] = useState([]);
-  const [payments, setPayments] = useState([]);
-
-  function loadData() {
-    const savedInvoices = getInvoices();
-    const savedCustomers = getCustomers();
-    const savedPayments = getPayments();
-
-    setAllInvoices(savedInvoices);
-    setCustomers(savedCustomers);
-    setPayments(savedPayments);
-  }
-
-  useEffect(() => {
-    loadData();
-  }, []);
 
   function handleSubmit(event) {
     event.preventDefault();
@@ -48,9 +33,8 @@ function PaymentForm({ onPaymentAdded }) {
     }
 
     const invoice = allInvoices.find((inv) => inv.id === selectedInvoice);
-    const existingPayments = getPayments();
 
-    const alreadyPaid = calculateTotalPaid(existingPayments, selectedInvoice);
+    const alreadyPaid = calculateTotalPaid(payments, selectedInvoice);
 
     const remaining = invoice.total - alreadyPaid;
 
@@ -72,16 +56,13 @@ function PaymentForm({ onPaymentAdded }) {
       date: date,
     };
 
-    const updatedPayments = [...existingPayments, newPayment];
-    savePayments(updatedPayments);
+    addPayment(newPayment);
     toast.success("Payment recorded");
 
     setSelectedInvoice("");
     setAmount("");
     setMethod("Cash");
     setDate("");
-
-    loadData();
 
     if (onPaymentAdded) {
       onPaymentAdded();
@@ -123,10 +104,10 @@ function PaymentForm({ onPaymentAdded }) {
             {allInvoices.map((invoice) => {
               const customer = customers.find(c => String(c.id) === String(invoice.customerId));
               const custName = customer ? customer.name : (invoice.customerName || invoice.customerId || "Unknown");
-              
+
               const alreadyPaid = calculateTotalPaid(payments, invoice.id);
               const remaining = Number(invoice.total) - alreadyPaid;
-              
+
               if (remaining <= 0) return null;
 
               return (
