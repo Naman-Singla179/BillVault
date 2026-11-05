@@ -359,43 +359,41 @@ function CustomerList({ customers = [], onEdit, onDelete }) {
                         <div className="customer-table-actions">
                           <button
                             type="button"
-                            className="btn-icon"
+                            className="cust-btn-action"
                             aria-label={`View details for ${customer.name}`}
                             onClick={() => navigate(`/customers/${customer.id}`)}
                             title="View Customer Profile"
                           >
-                            <Eye size={14} aria-hidden="true" />
+                            <Eye size={13} aria-hidden="true" />
                             <span>View</span>
                           </button>
                           <button
                             type="button"
-                            className="btn-icon"
+                            className="cust-btn-action"
                             aria-label={`View ledger for ${customer.name}`}
                             onClick={() => navigate(`/customers/${customer.id}/ledger`)}
                             title="View Financial Ledger"
                           >
-                            <BookOpen size={14} aria-hidden="true" />
+                            <BookOpen size={13} aria-hidden="true" />
                             <span>Ledger</span>
                           </button>
                           <button
                             type="button"
-                            className="btn-icon"
+                            className="cust-btn-icon"
                             aria-label={`Edit ${customer.name}`}
                             onClick={() => onEdit(customer)}
                             title="Edit Customer"
                           >
-                            <Edit2 size={14} aria-hidden="true" />
-                            <span>Edit</span>
+                            <Edit2 size={13} aria-hidden="true" />
                           </button>
                           <button
                             type="button"
-                            className="btn-icon btn-icon-delete"
+                            className="cust-btn-icon cust-btn-delete"
                             aria-label={`Delete ${customer.name}`}
                             onClick={() => setCustomerToDelete(customer)}
                             title="Delete Customer"
                           >
-                            <Trash2 size={14} aria-hidden="true" />
-                            <span>Delete</span>
+                            <Trash2 size={13} aria-hidden="true" />
                           </button>
                         </div>
                       </td>

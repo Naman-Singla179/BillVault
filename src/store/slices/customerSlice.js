@@ -72,3 +72,4 @@ export const selectCustomerFilters = (state) => ({
 });
 
 export default customerSlice.reducer;
+
