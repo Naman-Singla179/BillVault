@@ -2,18 +2,27 @@ import { useState } from 'react'
 import './BusinessProfileForm.css'
 
 const DEFAULT_PROFILE = {
-  name: '',
-  email: '',
-  phone: '',
-  address: '',
-  gstin: '',
-  upiId: '',
+  name: 'BuildCraft Infra & Construction Pvt. Ltd.',
+  email: 'accounts@buildcraftinfra.com',
+  phone: '9876543210',
+  address: 'Plot 45-B, Industrial Area Phase 2, Chandigarh, 160002',
+  gstin: '04AABCB5678F1Z2',
+  upiId: 'buildcraft@okaxis',
 }
 
 function BusinessProfileForm({ initialData, onSave }) {
-  const [form, setForm] = useState(initialData || DEFAULT_PROFILE)
+  const [form, setForm] = useState(() => (initialData && initialData.name ? initialData : DEFAULT_PROFILE))
   const [logoPreview, setLogoPreview] = useState(null)
   const [saved, setSaved] = useState(false)
+
+  // Sync state if initialData changes after mount
+  const [prevData, setPrevData] = useState(initialData)
+  if (initialData !== prevData) {
+    setPrevData(initialData)
+    if (initialData && initialData.name) {
+      setForm(initialData)
+    }
+  }
 
   function handleChange(field, value) {
     setForm((prev) => ({ ...prev, [field]: value }))
@@ -34,14 +43,14 @@ function BusinessProfileForm({ initialData, onSave }) {
   }
 
   function handleReset() {
-    setForm(initialData || DEFAULT_PROFILE)
+    setForm(DEFAULT_PROFILE)
     setSaved(false)
   }
 
   return (
     <form className="business-form card" onSubmit={handleSubmit}>
       <div className="business-form-logo">
-        <div className="business-form-logo-preview">
+        <div className="business-form-logo-preview" aria-hidden="true">
           {logoPreview ? (
             <img src={logoPreview} alt="Business logo preview" />
           ) : (
@@ -58,6 +67,7 @@ function BusinessProfileForm({ initialData, onSave }) {
             accept="image/*"
             onChange={handleLogoChange}
             className="business-form-logo-input"
+            aria-label="Upload business logo image"
           />
           <p className="business-form-logo-hint">PNG or JPG, appears on invoices</p>
         </div>
@@ -72,9 +82,10 @@ function BusinessProfileForm({ initialData, onSave }) {
             id="business-name"
             type="text"
             required
+            aria-required="true"
             value={form.name}
             onChange={(e) => handleChange('name', e.target.value)}
-            placeholder="e.g. Sharma Traders"
+            placeholder="e.g. BuildCraft Infra & Construction"
           />
         </div>
 
@@ -84,9 +95,10 @@ function BusinessProfileForm({ initialData, onSave }) {
             id="business-email"
             type="email"
             required
+            aria-required="true"
             value={form.email}
             onChange={(e) => handleChange('email', e.target.value)}
-            placeholder="e.g. billing@sharmatraders.com"
+            placeholder="e.g. accounts@buildcraftinfra.com"
           />
         </div>
       </div>
@@ -98,9 +110,10 @@ function BusinessProfileForm({ initialData, onSave }) {
             id="business-phone"
             type="tel"
             required
+            aria-required="true"
             value={form.phone}
             onChange={(e) => handleChange('phone', e.target.value)}
-            placeholder="e.g. 98765 43210"
+            placeholder="e.g. 9876543210"
           />
         </div>
 
@@ -110,9 +123,10 @@ function BusinessProfileForm({ initialData, onSave }) {
             id="business-gstin"
             type="text"
             required
+            aria-required="true"
             value={form.gstin}
             onChange={(e) => handleChange('gstin', e.target.value)}
-            placeholder="e.g. 22AAAAA0000A1Z5"
+            placeholder="e.g. 04AABCB5678F1Z2"
           />
         </div>
       </div>
@@ -123,9 +137,10 @@ function BusinessProfileForm({ initialData, onSave }) {
           id="business-address"
           rows="3"
           required
+          aria-required="true"
           value={form.address}
           onChange={(e) => handleChange('address', e.target.value)}
-          placeholder="Shop / street, city, state, PIN"
+          placeholder="Shop / plot, industrial area, city, state, PIN"
         />
       </div>
 
@@ -135,20 +150,21 @@ function BusinessProfileForm({ initialData, onSave }) {
           id="business-upi"
           type="text"
           required
+          aria-required="true"
           value={form.upiId}
           onChange={(e) => handleChange('upiId', e.target.value)}
-          placeholder="e.g. sharmatraders@upi"
+          placeholder="e.g. buildcraft@upi"
         />
       </div>
 
-      <div className="form-actions">
+      <div className="form-actions business-form-actions">
         <button type="submit" className="btn btn-primary">
           Save Changes
         </button>
         <button type="button" className="btn btn-secondary" onClick={handleReset}>
-          Reset
+          Reset to Demo
         </button>
-        {saved && <span className="business-form-saved">Saved</span>}
+        {saved && <span className="business-form-saved" role="status">Saved</span>}
       </div>
     </form>
   )

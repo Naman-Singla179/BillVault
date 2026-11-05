@@ -1,4 +1,3 @@
-
 import { useEffect } from "react";
 import "./Modal.css";
 
@@ -38,16 +37,17 @@ function Modal({
         className="card modal-panel"
         role="dialog"
         aria-modal="true"
-        aria-label={title}
+        aria-labelledby="modal-dialog-title"
         onClick={(event) => event.stopPropagation()}
       >
         <div className="modal-header">
-          <h2>{title}</h2>
+          <h2 id="modal-dialog-title">{title}</h2>
 
           <button
+            type="button"
             className="modal-close"
             onClick={onClose}
-            aria-label="Close"
+            aria-label="Close dialog"
           >
             ×
           </button>
@@ -57,14 +57,13 @@ function Modal({
 
         {onConfirm && (
           <div className="modal-footer">
-            <button className="btn btn-secondary" onClick={onClose}>
+            <button type="button" className="btn btn-secondary" onClick={onClose}>
               {cancelText}
             </button>
 
             <button
-              className={
-                danger ? "btn btn-danger" : "btn btn-primary"
-              }
+              type="button"
+              className={danger ? "btn btn-danger" : "btn btn-primary"}
               onClick={onConfirm}
             >
               {confirmText}

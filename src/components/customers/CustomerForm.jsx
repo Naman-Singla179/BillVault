@@ -9,12 +9,19 @@ function CustomerForm({ initialData, onSave, onCancel }) {
 
   function handleChange(field, value) {
     setForm((prev) => ({ ...prev, [field]: value }))
+    if (errors[field]) {
+      setErrors((prev) => ({ ...prev, [field]: '' }))
+    }
   }
 
   function validate() {
     const nextErrors = {}
     if (!form.name.trim()) nextErrors.name = 'Full name is required'
-    if (!form.phone.trim()) nextErrors.phone = 'Phone number is required'
+    if (!form.phone.trim()) {
+      nextErrors.phone = 'Phone number is required'
+    } else if (form.phone.replace(/\D/g, '').length !== 10) {
+      nextErrors.phone = 'Phone number must be exactly 10 digits'
+    }
     return nextErrors
   }
 
@@ -29,7 +36,7 @@ function CustomerForm({ initialData, onSave, onCancel }) {
   }
 
   return (
-    <form className="customer-form card" onSubmit={handleSubmit}>
+    <form className="customer-form card" onSubmit={handleSubmit} noValidate>
       <h3 className="customer-form-title">
         {initialData ? 'Edit Customer' : 'Add Customer'}
       </h3>
@@ -41,11 +48,18 @@ function CustomerForm({ initialData, onSave, onCancel }) {
         <input
           id="customer-name"
           type="text"
+          aria-required="true"
+          aria-invalid={errors.name ? 'true' : 'false'}
+          aria-describedby={errors.name ? 'customer-name-error' : undefined}
           value={form.name}
           onChange={(e) => handleChange('name', e.target.value)}
-          placeholder="e.g. Ravi Kumar"
+          placeholder="e.g. Skyline Heights Developers"
         />
-        {errors.name && <span className="field-error">{errors.name}</span>}
+        {errors.name && (
+          <span id="customer-name-error" className="field-error" role="alert">
+            {errors.name}
+          </span>
+        )}
       </div>
 
       <div className="form-field">
@@ -55,7 +69,7 @@ function CustomerForm({ initialData, onSave, onCancel }) {
           type="email"
           value={form.email}
           onChange={(e) => handleChange('email', e.target.value)}
-          placeholder="e.g. ravi@example.com"
+          placeholder="e.g. billing@skylineheights.in"
         />
       </div>
 
@@ -69,22 +83,29 @@ function CustomerForm({ initialData, onSave, onCancel }) {
           inputMode="numeric"
           pattern="[0-9]*"
           maxLength={10}
+          aria-required="true"
+          aria-invalid={errors.phone ? 'true' : 'false'}
+          aria-describedby={errors.phone ? 'customer-phone-error' : undefined}
           value={form.phone}
           onKeyDown={(e) => {
             if (
               ['Backspace', 'Delete', 'Tab', 'Escape', 'Enter', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key) ||
               (e.ctrlKey || e.metaKey)
             ) {
-              return;
+              return
             }
             if (!/^[0-9]$/.test(e.key)) {
-              e.preventDefault();
+              e.preventDefault()
             }
           }}
           onChange={(e) => handleChange('phone', e.target.value.replace(/\D/g, '').slice(0, 10))}
           placeholder="10-digit number (e.g. 9876543210)"
         />
-        {errors.phone && <span className="field-error">{errors.phone}</span>}
+        {errors.phone && (
+          <span id="customer-phone-error" className="field-error" role="alert">
+            {errors.phone}
+          </span>
+        )}
       </div>
 
       <div className="form-field">
@@ -94,11 +115,11 @@ function CustomerForm({ initialData, onSave, onCancel }) {
           rows="3"
           value={form.address}
           onChange={(e) => handleChange('address', e.target.value)}
-          placeholder="Street, city, state"
+          placeholder="Street, site address, city, state, PIN"
         />
       </div>
 
-      <div className="form-actions">
+      <div className="form-actions customer-form-actions">
         <button type="submit" className="btn btn-primary">
           Save Customer
         </button>

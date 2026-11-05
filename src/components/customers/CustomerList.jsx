@@ -94,7 +94,7 @@ function matchesCustomerName(customerName, term) {
   return false
 }
 
-function CustomerList({ customers, onEdit, onDelete }) {
+function CustomerList({ customers = [], onEdit, onDelete }) {
   const [query, setQuery] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
   const [customerToDelete, setCustomerToDelete] = useState(null)
@@ -160,7 +160,7 @@ function CustomerList({ customers, onEdit, onDelete }) {
 
   return (
     <div className="card customer-list">
-      <div className="customer-list-search">
+      <div className="customer-list-search" role="search" aria-label="Customer search">
         <input
           type="search"
           value={query}
@@ -182,15 +182,15 @@ function CustomerList({ customers, onEdit, onDelete }) {
       ) : (
         <>
           <div className="customer-table-wrap">
-            <table className="customer-table">
+            <table className="customer-table" aria-label="Customers directory">
               <thead>
                 <tr>
-                  <th>Name</th>
-                  <th>Email</th>
-                  <th>Phone</th>
-                  <th>Address</th>
-                  <th>Status</th>
-                  <th className="customer-table-actions-col">Actions</th>
+                  <th scope="col">Name</th>
+                  <th scope="col">Email</th>
+                  <th scope="col">Phone</th>
+                  <th scope="col">Address</th>
+                  <th scope="col">Status</th>
+                  <th scope="col" className="customer-table-actions-col">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -210,7 +210,7 @@ function CustomerList({ customers, onEdit, onDelete }) {
                         <button
                           type="button"
                           className="btn-icon"
-                          aria-label={`View ${customer.name}`}
+                          aria-label={`View details for ${customer.name}`}
                           onClick={() => navigate(`/customers/${customer.id}`)}
                         >
                           View
@@ -218,7 +218,7 @@ function CustomerList({ customers, onEdit, onDelete }) {
                         <button
                           type="button"
                           className="btn-icon"
-                          aria-label={`View Ledger for ${customer.name}`}
+                          aria-label={`View ledger for ${customer.name}`}
                           onClick={() => navigate(`/customers/${customer.id}/ledger`)}
                         >
                           Ledger
@@ -247,7 +247,7 @@ function CustomerList({ customers, onEdit, onDelete }) {
             </table>
           </div>
 
-          <div className="customer-pagination">
+          <div className="customer-pagination" aria-label="Customer list pagination">
             <div className="pagination-info">
               Showing {startIndex + 1}–{Math.min(startIndex + ITEMS_PER_PAGE, filtered.length)} of {filtered.length} {filtered.length === 1 ? 'customer' : 'customers'}
             </div>

@@ -21,6 +21,7 @@ import {
   saveSettings,
 } from "../services/storage";
 import { reconcileInvoices } from "../utils/paymentUtils";
+import { loadConstructionDemoData } from "../services/demoData";
 
 const AppContext = createContext(null);
 
@@ -116,6 +117,15 @@ export function AppProvider({ children }) {
   const [businessProfile, setBusinessState] = useState(getBusiness);
   const [settings, setSettingsState] = useState(getSettings);
 
+  // Auto-seed construction data on initial run if storage is empty
+  useEffect(() => {
+    const existingCust = getCustomers();
+    const existingInv = getInvoices();
+    if (existingCust.length === 0 && existingInv.length === 0) {
+      loadConstructionDemoData(false);
+    }
+  }, []);
+
   useEffect(() => {
     const refreshers = {
       [KEYS.customers]: () => setCustomers(getCustomers()),
@@ -189,6 +199,7 @@ export function AppProvider({ children }) {
       deleteProduct,
       setBusinessProfile,
       updateSettings,
+      loadDemoData: () => loadConstructionDemoData(true),
     }),
     [customers, invoices, payments, products, businessProfile, settings]
   );

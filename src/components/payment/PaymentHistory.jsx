@@ -1,6 +1,6 @@
 import PaymentCard from './PaymentCard';
 
-function PaymentHistory({ payments, invoices, customers }) {
+function PaymentHistory({ payments = [], invoices = [], customers = [] }) {
   if (payments.length === 0) {
     return (
       <div className="card" style={{ padding: '32px', textAlign: 'center', color: 'rgb(107, 114, 128)' }}>
@@ -26,7 +26,7 @@ function PaymentHistory({ payments, invoices, customers }) {
         <tbody>
           {payments.map((payment, index) => {
             const invoice = invoices.find(inv => String(inv.id) === String(payment.invoiceId));
-            const customer = customers.find(c => String(c.id) === String(invoice?.customerId));
+            const customer = customers.find(c => String(c.id) === String(invoice?.customerId) || c.name === invoice?.customerId);
             return (
               <PaymentCard 
                 key={payment.id} 

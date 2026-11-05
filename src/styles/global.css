@@ -1,11 +1,9 @@
-
 :root {
   color-scheme: dark;
   
   --font-display: "Manrope", "Segoe UI", sans-serif;
   --font-body: "Inter", "Segoe UI", sans-serif;
 
-  
   --sidebar-width: 232px;
   --navbar-height: 60px;
   --radius-sm: 6px;
@@ -13,8 +11,6 @@
   --radius-lg: 14px;
   --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.4);
 }
-
-
 
 * {
   box-sizing: border-box;
@@ -24,10 +20,13 @@ html,
 body,
 #root {
   height: 100%;
+  width: 100%;
 }
 
+html,
 body {
   margin: 0;
+  overflow-x: hidden;
   background: rgb(14, 16, 21);
   color: rgb(233, 234, 238);
   font-family: var(--font-body);
@@ -57,17 +56,16 @@ button {
   font-family: var(--font-body);
 }
 
-
+/* Accessible Keyboard Focus Indicators */
 a:focus-visible,
 button:focus-visible,
 input:focus-visible,
 select:focus-visible,
-textarea:focus-visible {
+textarea:focus-visible,
+[tabindex]:focus-visible {
   outline: 2px solid rgb(217, 164, 65);
   outline-offset: 2px;
 }
-
-
 
 .page {
   padding: 28px 32px 48px;
@@ -105,6 +103,7 @@ textarea:focus-visible {
 .btn {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
   border-radius: var(--radius-sm);
   border: 1px solid transparent;
@@ -112,6 +111,7 @@ textarea:focus-visible {
   font-weight: 600;
   padding: 9px 16px;
   cursor: pointer;
+  min-height: 38px;
   transition: background-color 0.15s ease, border-color 0.15s ease;
 }
 
@@ -150,6 +150,13 @@ textarea:focus-visible {
   background: transparent;
   border: 1px solid rgb(51, 57, 71);
   color: rgb(154, 161, 175);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 34px;
+  min-height: 34px;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
 }
 
 .btn-icon:hover {
@@ -180,8 +187,8 @@ textarea:focus-visible {
   font-size: 14px;
   color: rgb(233, 234, 238);
   font-family: var(--font-body);
+  width: 100%;
 }
-
 
 .form-field input::placeholder,
 .form-field textarea::placeholder {
@@ -213,6 +220,7 @@ textarea:focus-visible {
   display: flex;
   gap: 12px;
   margin-top: 8px;
+  flex-wrap: wrap;
 }
 
 .badge {
@@ -260,12 +268,29 @@ textarea:focus-visible {
   font-size: 14px;
 }
 
+/* Global Responsive Layout Breakpoints */
 @media (max-width: 768px) {
   .page {
-    padding: 20px 16px 40px;
+    padding: 20px 16px 36px;
   }
 
   .form-row {
     grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .page {
+    padding: 16px 12px 32px;
+  }
+
+  .page-header h1 {
+    font-size: 20px;
+  }
+
+  .btn {
+    padding: 8px 14px;
+    font-size: 13.5px;
   }
 }

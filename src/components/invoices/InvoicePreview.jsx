@@ -1,8 +1,7 @@
 import './InvoicePreview.css'
 import UpiQrCode from '../payment/UpiQrCode'
 import { useApp } from '../../context/AppContext'
-import { calculateTotalPaid } from '../../utils/paymentUtils'
-
+import { calculateTotalPaid, formatInvoiceId } from '../../utils/paymentUtils'
 
 function InvoicePreview({ business, customer, invoice, items }) {
   const { payments } = useApp()
@@ -16,6 +15,28 @@ function InvoicePreview({ business, customer, invoice, items }) {
     : parseFloat(String(invoice?.total || '0').replace(/[^0-9.-]+/g, '')) || 0
   const invoiceId = invoice?.id || invoice?.number || ''
   const remaining = Math.max(0, rawTotal - calculateTotalPaid(payments, invoiceId))
+
+  const statusUpper = (invoice?.status || invoice?.paymentStatus || 'PENDING').toUpperCase()
+  let badgeClass = 'badge-warning'
+  if (statusUpper === 'PAID') badgeClass = 'badge-success'
+  else if (statusUpper === 'OVERDUE') badgeClass = 'badge-danger'
+  else if (statusUpper === 'DRAFT') badgeClass = 'badge-muted'
+
+  const subtotalFormatted = typeof invoice?.subtotal === 'number'
+    ? `₹${invoice.subtotal.toLocaleString('en-IN')}`
+    : (invoice?.subtotal ?? '—')
+
+  const taxFormatted = typeof invoice?.tax === 'number'
+    ? `${invoice.tax}% (₹${Math.round((Number(invoice.subtotal || 0) * invoice.tax) / 100).toLocaleString('en-IN')})`
+    : (invoice?.tax ?? '—')
+
+  const discountFormatted = typeof invoice?.discount === 'number'
+    ? `−₹${invoice.discount.toLocaleString('en-IN')}`
+    : (invoice?.discount ?? '—')
+
+  const totalFormatted = typeof invoice?.total === 'number'
+    ? `₹${invoice.total.toLocaleString('en-IN')}`
+    : (invoice?.total ?? '—')
 
   return (
     <div className="invoice-preview-wrap">
@@ -33,8 +54,9 @@ function InvoicePreview({ business, customer, invoice, items }) {
           </div>
           <div className="invoice-preview-meta">
             <h2>INVOICE</h2>
-            <p>Invoice #{invoice?.number ?? '—'}</p>
+            <p>Invoice #{formatInvoiceId(invoice?.number || invoice?.id || '—')}</p>
             <p>Date: {invoice?.date ?? '—'}</p>
+            {invoice?.dueDate && <p>Due Date: {invoice.dueDate}</p>}
           </div>
         </header>
 
@@ -49,10 +71,10 @@ function InvoicePreview({ business, customer, invoice, items }) {
           </div>
           <div>
             <span className="invoice-preview-label">Bill To</span>
-            <p className="invoice-preview-party-name">{customer?.name || 'Customer Name'}</p>
-            <p>{customer?.address || 'Customer address'}</p>
-            <p>{customer?.phone || '—'}</p>
-            <p>{customer?.email || '—'}</p>
+            <p className="invoice-preview-party-name">{customer?.name || invoice?.customerName || 'Customer Name'}</p>
+            <p>{customer?.address || invoice?.customerAddress || 'Customer address'}</p>
+            <p>{customer?.phone || invoice?.customerPhone || '—'}</p>
+            <p>{customer?.email || invoice?.customerEmail || '—'}</p>
           </div>
         </section>
 
@@ -68,14 +90,25 @@ function InvoicePreview({ business, customer, invoice, items }) {
             </thead>
             <tbody>
               {items && items.length > 0 ? (
-                items.map((item, index) => (
-                  <tr key={item.id ?? index}>
-                    <td>{item.name}</td>
-                    <td>{item.quantity}</td>
-                    <td>{item.price}</td>
-                    <td className="invoice-preview-num">{item.amount}</td>
-                  </tr>
-                ))
+                items.map((item, index) => {
+                  const qty = Number(item.quantity) || 1
+                  const priceNum = Number(item.price) || 0
+                  const lineTotal = item.amount
+                    ? (typeof item.amount === 'number' ? `₹${item.amount.toLocaleString('en-IN')}` : item.amount)
+                    : `₹${(qty * priceNum).toLocaleString('en-IN')}`
+                  const priceStr = typeof item.price === 'number'
+                    ? `₹${item.price.toLocaleString('en-IN')}`
+                    : (item.price || `₹${priceNum}`)
+
+                  return (
+                    <tr key={item.id ?? index}>
+                      <td>{item.name || item.description || 'Line Item'}</td>
+                      <td>{qty}</td>
+                      <td>{priceStr}</td>
+                      <td className="invoice-preview-num">{lineTotal}</td>
+                    </tr>
+                  )
+                })
               ) : (
                 <tr>
                   <td colSpan="4" className="invoice-preview-empty">
@@ -90,35 +123,25 @@ function InvoicePreview({ business, customer, invoice, items }) {
         <section className="invoice-preview-summary">
           <div className="invoice-preview-summary-row">
             <span>Subtotal</span>
-            <span>{invoice?.subtotal ?? '—'}</span>
+            <span>{subtotalFormatted}</span>
           </div>
           <div className="invoice-preview-summary-row">
-            <span>Tax</span>
-            <span>{invoice?.tax ?? '—'}</span>
+            <span>GST Tax</span>
+            <span>{taxFormatted}</span>
           </div>
           <div className="invoice-preview-summary-row">
             <span>Discount</span>
-            <span>{invoice?.discount ?? '—'}</span>
+            <span>{discountFormatted}</span>
           </div>
           <div className="invoice-preview-summary-row invoice-preview-summary-total">
             <span>Total</span>
-            <span>{invoice?.total ?? '—'}</span>
+            <span>{totalFormatted}</span>
           </div>
         </section>
 
         <footer className="invoice-preview-footer">
-          <span
-            className={`badge ${
-              invoice?.paymentStatus === 'paid'
-                ? 'badge-success'
-                : invoice?.paymentStatus === 'overdue'
-                ? 'badge-danger'
-                : 'badge-warning'
-            }`}
-          >
-            {invoice?.paymentStatus
-              ? invoice.paymentStatus.charAt(0).toUpperCase() + invoice.paymentStatus.slice(1)
-              : 'Payment status pending'}
+          <span className={`badge ${badgeClass}`}>
+            {statusUpper}
           </span>
           {remaining > 0 && <UpiQrCode amount={remaining} invoiceId={invoiceId} />}
           {business?.upiId && <p className="invoice-preview-upi">Pay via UPI: {business.upiId}</p>}

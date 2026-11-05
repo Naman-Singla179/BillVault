@@ -129,7 +129,7 @@ function CustomerLedgerPage({ customers = [] }) {
     return matchesCustomer && isNotDraft
   })
 
-  // Feature B: Financial Summary Calculations
+  // Financial Summary Calculations
   const lifetimeBilled = customerInvoices.reduce(
     (sum, inv) => sum + (Number(inv.total) || 0),
     0
@@ -147,7 +147,7 @@ function CustomerLedgerPage({ customers = [] }) {
 
   const invoiceCount = customerInvoices.length
 
-  // Feature D: Invoice Aging Breakdown
+  // Invoice Aging Breakdown
   const aging = calculateInvoiceAging(customerInvoices, payments)
 
   return (
@@ -168,7 +168,7 @@ function CustomerLedgerPage({ customers = [] }) {
         </div>
       </div>
 
-      {/* Feature B: 4 Summary Cards */}
+      {/* 4 Summary Cards */}
       <div className="customer-ledger-metrics-grid">
         <div className="card customer-ledger-metric-card">
           <span className="metric-label">Lifetime billed</span>
@@ -201,7 +201,7 @@ function CustomerLedgerPage({ customers = [] }) {
         </div>
       </div>
 
-      {/* Feature D: Invoice Aging Section */}
+      {/* Invoice Aging Section */}
       <div className="card customer-ledger-section">
         <div className="section-header">
           <div>
@@ -287,7 +287,7 @@ function CustomerLedgerPage({ customers = [] }) {
         </div>
       </div>
 
-      {/* Feature C: Invoice History Table */}
+      {/* Invoice History Table */}
       <div className="card customer-ledger-section">
         <div className="section-header">
           <div>
@@ -305,16 +305,16 @@ function CustomerLedgerPage({ customers = [] }) {
           </div>
         ) : (
           <div className="customer-ledger-table-wrap">
-            <table className="customer-ledger-table">
+            <table className="customer-ledger-table" aria-label="Customer invoice history">
               <thead>
                 <tr>
-                  <th>Invoice ID</th>
-                  <th>Date</th>
-                  <th>Due Date</th>
-                  <th>Invoice Total</th>
-                  <th>Amount Paid</th>
-                  <th>Outstanding</th>
-                  <th>Status</th>
+                  <th scope="col">Invoice ID</th>
+                  <th scope="col">Date</th>
+                  <th scope="col">Due Date</th>
+                  <th scope="col">Invoice Total</th>
+                  <th scope="col">Amount Paid</th>
+                  <th scope="col">Outstanding</th>
+                  <th scope="col">Status</th>
                 </tr>
               </thead>
               <tbody>

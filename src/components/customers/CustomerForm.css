@@ -1,16 +1,33 @@
-
 .customer-form {
-  padding: 22px;
+  padding: 24px;
   margin-bottom: 24px;
-  max-width: 480px;
+  max-width: 520px;
+  width: 100%;
 }
 
 .customer-form-title {
-  font-size: 16px;
+  font-size: 18px;
   margin-bottom: 18px;
+  color: rgb(233, 234, 238);
 }
 
-.field-error {
-  font-size: 12px;
-  color: rgb(229, 72, 77);
+.customer-form-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 480px) {
+  .customer-form {
+    padding: 16px;
+  }
+
+  .customer-form-actions {
+    flex-direction: column-reverse;
+  }
+
+  .customer-form-actions .btn {
+    width: 100%;
+  }
 }

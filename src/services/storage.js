@@ -57,7 +57,6 @@ export function savePayments(payments) {
   return safeSet(KEYS.payments, payments);
 }
 
-
 export function getBusiness() {
   return safeGet(KEYS.business, {});
 }
@@ -78,155 +77,167 @@ export function saveSettings(settings) {
   return safeSet(KEYS.settings, settings);
 }
 
-const DEFAULT_PRODUCTS = [
+const DEFAULT_CONSTRUCTION_PRODUCTS = [
   {
-    id: "PROD-001",
-    name: "Printed Invoice Books (x10)",
+    id: "PROD-CONST-001",
+    name: "UltraTech Super PPC Cement (50kg Bag)",
     type: "Product",
-    hsnSac: "4820",
-    price: 1500,
-    gst: 18,
-    category: "Printing",
-    stock: 50,
-    description: "Pack of 10 custom invoice books",
+    hsnSac: "2523",
+    price: 380,
+    gst: 28,
+    category: "Cement & Aggregates",
+    stock: 450,
+    description: "High-grade Portland Pozzolana Cement for structural foundation and slab casting",
     status: "Active"
   },
   {
-    id: "PROD-002",
-    name: "Logo Design",
-    type: "Service",
-    hsnSac: "9983",
-    price: 5000,
-    gst: 18,
-    category: "Design",
-    stock: null,
-    description: "Custom business logo design",
-    status: "Active"
-  },
-  {
-    id: "PROD-003",
-    name: "Custom Rubber Stamp",
+    id: "PROD-CONST-002",
+    name: "Fe-550D TMT Steel Rebars (12mm, Metric Ton)",
     type: "Product",
-    hsnSac: "9611",
-    price: 1500,
-    gst: 12,
-    category: "Office",
-    stock: 25,
-    description: "Business name rubber stamp",
-    status: "Active"
-  },
-  {
-    id: "PROD-004",
-    name: "Accounting Consultation",
-    type: "Service",
-    hsnSac: "9982",
-    price: 2000,
+    hsnSac: "7214",
+    price: 62000,
     gst: 18,
-    category: "Consulting",
-    stock: null,
-    description: "1-hour financial consultation",
+    category: "Steel & Rebars",
+    stock: 24,
+    description: "Primary thermo-mechanically treated high-ductility reinforcement steel",
     status: "Active"
   },
   {
-    id: "PROD-005",
-    name: "Receipt Paper Roll",
+    id: "PROD-CONST-003",
+    name: "River Sand Coarse Grade (100 Cu.Ft)",
     type: "Product",
-    hsnSac: "4811",
-    price: 350,
+    hsnSac: "2505",
+    price: 4200,
     gst: 5,
-    category: "Supplies",
-    stock: 3,
-    description: "Thermal receipt paper, 80mm",
-    status: "Active"
-  },
-  {
-    id: "PROD-006",
-    name: "Business Card Set",
-    type: "Product",
-    hsnSac: "4911",
-    price: 800,
-    gst: 12,
-    category: "Printing",
-    stock: 0,
-    description: "100 premium business cards",
-    status: "Active"
-  },
-  {
-    id: "PROD-007",
-    name: "Website Maintenance",
-    type: "Service",
-    hsnSac: "9983",
-    price: 3500,
-    gst: 18,
-    category: "Design",
-    stock: null,
-    description: "Monthly website updates & security check",
-    status: "Active"
-  },
-  {
-    id: "PROD-008",
-    name: "A4 Copier Paper (5 Reams)",
-    type: "Product",
-    hsnSac: "4802",
-    price: 1250,
-    gst: 12,
-    category: "Supplies",
-    stock: 40,
-    description: "75 GSM Multipurpose copy paper",
-    status: "Active"
-  },
-  {
-    id: "PROD-009",
-    name: "GST Return Filing",
-    type: "Service",
-    hsnSac: "9982",
-    price: 1500,
-    gst: 18,
-    category: "Consulting",
-    stock: null,
-    description: "Quarterly GST filing assistance",
-    status: "Active"
-  },
-  {
-    id: "PROD-010",
-    name: "Ballpoint Pens (Box of 50)",
-    type: "Product",
-    hsnSac: "9608",
-    price: 250,
-    gst: 18,
-    category: "Office",
+    category: "Cement & Aggregates",
     stock: 15,
-    description: "Blue ink ballpoint pens",
+    description: "Triple washed coarse river sand for plastering and concrete mix",
     status: "Active"
   },
   {
-    id: "PROD-011",
-    name: "Brochure Design & Print",
+    id: "PROD-CONST-004",
+    name: "Red Clay Kiln Bricks (Per 1,000 Pcs)",
+    type: "Product",
+    hsnSac: "6901",
+    price: 8500,
+    gst: 12,
+    category: "Bricks & Masonry",
+    stock: 35,
+    description: "First-class machine-moulded kiln burnt red clay bricks",
+    status: "Active"
+  },
+  {
+    id: "PROD-CONST-005",
+    name: "Ready Mix Concrete M-25 Grade (Per Cu.Meter)",
+    type: "Product",
+    hsnSac: "3824",
+    price: 4600,
+    gst: 18,
+    category: "Cement & Aggregates",
+    stock: 80,
+    description: "Standard design mix concrete for columns, beams, and slabs",
+    status: "Active"
+  },
+  {
+    id: "PROD-CONST-006",
+    name: "Crushed Blue Metal Aggregates 20mm (100 Cu.Ft)",
+    type: "Product",
+    hsnSac: "2517",
+    price: 3100,
+    gst: 5,
+    category: "Cement & Aggregates",
+    stock: 20,
+    description: "Machine-crushed angular granite aggregates for RCC construction",
+    status: "Active"
+  },
+  {
+    id: "PROD-CONST-007",
+    name: "Heavy Excavator & JCB Earthwork (Per Hour)",
+    type: "Service",
+    hsnSac: "9954",
+    price: 1800,
+    gst: 18,
+    category: "Civil Works & Equipment",
+    stock: null,
+    description: "Site levelling, basement excavation, and trenching with certified operator",
+    status: "Active"
+  },
+  {
+    id: "PROD-CONST-008",
+    name: "Structural RCC Column & Slab Casting (Per Sq.Ft)",
+    type: "Service",
+    hsnSac: "9954",
+    price: 240,
+    gst: 18,
+    category: "Civil Works & Equipment",
+    stock: null,
+    description: "Shuttering, rebar fixing, pouring, and vibrator compaction labor",
+    status: "Active"
+  },
+  {
+    id: "PROD-CONST-009",
+    name: "Astral CPVC Plumbing Pipe 1 inch (Bundle of 10)",
+    type: "Product",
+    hsnSac: "3917",
+    price: 3400,
+    gst: 18,
+    category: "Plumbing & Pipes",
+    stock: 4,
+    description: "Heavy duty hot and cold water distribution pipes (SDR 11)",
+    status: "Active"
+  },
+  {
+    id: "PROD-CONST-010",
+    name: "Finolex FRLS Copper Wire 2.5 sq mm (90m Coil)",
+    type: "Product",
+    hsnSac: "8544",
+    price: 2850,
+    gst: 18,
+    category: "Electrical & Wiring",
+    stock: 0,
+    description: "Flame retardant low smoke concealed electrical wiring cable",
+    status: "Active"
+  },
+  {
+    id: "PROD-CONST-011",
+    name: "Double Charged Vitrified Tiles 2x2 ft (Box of 4)",
+    type: "Product",
+    hsnSac: "6907",
+    price: 1250,
+    gst: 18,
+    category: "Finishing & Tiles",
+    stock: 120,
+    description: "Stain resistant glossy finish nano-polished floor tiles",
+    status: "Active"
+  },
+  {
+    id: "PROD-CONST-012",
+    name: "Site Waterproofing & Epoxy Coating (Per Sq.Ft)",
+    type: "Service",
+    hsnSac: "9954",
+    price: 85,
+    gst: 18,
+    category: "Civil Works & Equipment",
+    stock: null,
+    description: "Terrace and sunken slab chemical membrane waterproofing",
+    status: "Active"
+  },
+  {
+    id: "PROD-CONST-013",
+    name: "Architectural Drafting & Structural Audit",
     type: "Service",
     hsnSac: "9983",
-    price: 4500,
+    price: 15000,
     gst: 18,
-    category: "Design",
+    category: "Civil Works & Equipment",
     stock: null,
-    description: "Tri-fold promotional brochure",
-    status: "Active"
-  },
-  {
-    id: "PROD-012",
-    name: "Shipping Labels (500 Pack)",
-    type: "Product",
-    hsnSac: "4821",
-    price: 600,
-    gst: 18,
-    category: "Supplies",
-    stock: 18,
-    description: "Self-adhesive thermal shipping labels",
+    description: "CAD blueprints, structural load calculations, and municipal submission drawings",
     status: "Active"
   }
 ];
 
 export function getProducts() {
-  return safeGet(KEYS.products, DEFAULT_PRODUCTS);
+  return safeGet(KEYS.products, DEFAULT_CONSTRUCTION_PRODUCTS);
 }
 
 export function saveProducts(products) {

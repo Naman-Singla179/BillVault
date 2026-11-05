@@ -1,21 +1,20 @@
 import { useState } from 'react'
 import { useNavigate, useParams, Link } from 'react-router-dom'
 import CustomerForm from '../components/customers/CustomerForm'
-import { getInvoices, getPayments } from '../services/storage'
 import Modal from '../components/common/Modal'
 import { useToast } from '../context/ToastContext'
+import { useApp } from '../context/AppContext'
 import './CustomerDetailsPage.css'
 
-function CustomerDetailsPage({ customers, onUpdate, onDelete }) {
+function CustomerDetailsPage({ customers = [], onUpdate, onDelete }) {
   const { id } = useParams()
   const navigate = useNavigate()
   const toast = useToast()
+  const { invoices = [], payments = [] } = useApp()
   const [editing, setEditing] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
-  const [invoices] = useState(() => getInvoices())
-  const [payments] = useState(() => getPayments())
 
-  const customer = customers.find((c) => String(c.id) === id)
+  const customer = customers.find((c) => String(c.id) === String(id))
 
   if (!customer) {
     return (
@@ -52,7 +51,10 @@ function CustomerDetailsPage({ customers, onUpdate, onDelete }) {
           <h1>{customer.name}</h1>
         </div>
         {!editing && (
-          <div className="form-actions">
+          <div className="form-actions" style={{ display: 'flex', gap: '8px' }}>
+            <Link to={`/customers/${customer.id}/ledger`} className="btn btn-secondary">
+              View Ledger
+            </Link>
             <button type="button" className="btn btn-secondary" onClick={() => setEditing(true)}>
               Edit
             </button>
@@ -85,31 +87,35 @@ function CustomerDetailsPage({ customers, onUpdate, onDelete }) {
           <div className="customer-details-future card" style={{ marginTop: '20px' }}>
             <h3>Customer Summary</h3>
             {(() => {
-              const customerInvoices = invoices.filter(inv => String(inv.customerId) === String(customer.id));
-              const customerPayments = payments.filter(pay => customerInvoices.some(inv => inv.id === pay.invoiceId));
-              const totalBilled = customerInvoices.reduce((sum, inv) => sum + Number(inv.total), 0);
-              const totalPaid = customerPayments.reduce((sum, pay) => sum + Number(pay.amount), 0);
-              const outstandingBalance = totalBilled - totalPaid;
-              
+              const customerInvoices = invoices.filter(
+                (inv) => String(inv.customerId) === String(customer.id) || inv.customerId === customer.name
+              );
+              const customerPayments = payments.filter((pay) =>
+                customerInvoices.some((inv) => String(inv.id) === String(pay.invoiceId))
+              );
+              const totalBilled = customerInvoices.reduce((sum, inv) => sum + Number(inv.total || 0), 0);
+              const totalPaid = customerPayments.reduce((sum, pay) => sum + Number(pay.amount || 0), 0);
+              const outstandingBalance = Math.max(0, totalBilled - totalPaid);
+
               return (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px', marginTop: '16px' }}>
-                  <div style={{ padding: '16px', background: '#f5f5f5', borderRadius: '8px' }}>
-                    <p style={{ margin: 0, fontSize: '0.9rem', color: '#666' }}>Total Billed</p>
-                    <h2 style={{ margin: '8px 0 0 0', fontSize: '1.5rem', color: '#000' }}>₹{totalBilled.toFixed(2)}</h2>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px', marginTop: '16px' }}>
+                  <div style={{ padding: '16px', background: '#1e2430', borderRadius: '8px', border: '1px solid #333947' }}>
+                    <p style={{ margin: 0, fontSize: '0.9rem', color: '#9aa1af' }}>Total Billed</p>
+                    <h2 style={{ margin: '8px 0 0 0', fontSize: '1.5rem', color: '#e9eaee' }}>₹{totalBilled.toFixed(2)}</h2>
                   </div>
-                  <div style={{ padding: '16px', background: '#f5f5f5', borderRadius: '8px' }}>
-                    <p style={{ margin: 0, fontSize: '0.9rem', color: '#666' }}>Amount Paid</p>
-                    <h2 style={{ margin: '8px 0 0 0', fontSize: '1.5rem', color: 'green' }}>₹{totalPaid.toFixed(2)}</h2>
+                  <div style={{ padding: '16px', background: '#1e2430', borderRadius: '8px', border: '1px solid #333947' }}>
+                    <p style={{ margin: 0, fontSize: '0.9rem', color: '#9aa1af' }}>Amount Paid</p>
+                    <h2 style={{ margin: '8px 0 0 0', fontSize: '1.5rem', color: 'rgb(63, 182, 127)' }}>₹{totalPaid.toFixed(2)}</h2>
                   </div>
-                  <div style={{ padding: '16px', background: outstandingBalance > 0 ? '#fff0f0' : '#f5f5f5', borderRadius: '8px' }}>
-                    <p style={{ margin: 0, fontSize: '0.9rem', color: '#666' }}>Outstanding Balance</p>
-                    <h2 style={{ margin: '8px 0 0 0', fontSize: '1.5rem', color: outstandingBalance > 0 ? 'red' : '#000' }}>₹{outstandingBalance.toFixed(2)}</h2>
+                  <div style={{ padding: '16px', background: outstandingBalance > 0 ? 'rgba(229, 72, 77, 0.1)' : '#1e2430', borderRadius: '8px', border: '1px solid #333947' }}>
+                    <p style={{ margin: 0, fontSize: '0.9rem', color: '#9aa1af' }}>Outstanding Balance</p>
+                    <h2 style={{ margin: '8px 0 0 0', fontSize: '1.5rem', color: outstandingBalance > 0 ? 'rgb(229, 72, 77)' : '#e9eaee' }}>
+                      ₹{outstandingBalance.toFixed(2)}
+                    </h2>
                   </div>
                 </div>
               );
             })()}
-            
-
           </div>
         </div>
       )}

@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { IndianRupee, FileText, Clock, AlertCircle } from 'lucide-react';
-import { getInvoices, getPayments, getCustomers } from '../services/storage';
+import { IndianRupee, FileText, Clock, AlertCircle, Sparkles } from 'lucide-react';
+import { useApp } from '../context/AppContext';
+import { useToast } from '../context/ToastContext';
 import { 
   calculateTotalPaid, 
   calculateRemaining, 
@@ -12,6 +13,8 @@ import './DashboardPage.css';
 
 export default function DashboardPage({ profile }) {
   const navigate = useNavigate();
+  const toast = useToast();
+  const { invoices = [], payments = [], customers = [], loadDemoData } = useApp();
 
   // 1. Dashboard State
   const [stats, setStats] = useState({
@@ -26,7 +29,6 @@ export default function DashboardPage({ profile }) {
   const [allInvoices, setAllInvoices] = useState([]);
   const [dueSoonInvoices, setDueSoonInvoices] = useState([]);
   const [showAllInvoices, setShowAllInvoices] = useState(false);
-  const [customers, setCustomers] = useState([]);
 
   // 2. Helper to calculate how many days are left until due date
   function getDaysUntilDue(dueDateString) {
@@ -44,10 +46,6 @@ export default function DashboardPage({ profile }) {
 
   // 3. Load data and calculate financial metrics
   useEffect(() => {
-    const savedInvoices = getInvoices();
-    const payments = getPayments();
-    const savedCustomers = getCustomers();
-
     let totalRevenue = 0;
     let totalBilled = 0;
     let pendingPayments = 0;
@@ -56,8 +54,8 @@ export default function DashboardPage({ profile }) {
     let overdueCount = 0;
 
     // Calculate metrics for each invoice
-    for (let i = 0; i < savedInvoices.length; i++) {
-      const inv = savedInvoices[i];
+    for (let i = 0; i < invoices.length; i++) {
+      const inv = invoices[i];
       const totalPaid = calculateTotalPaid(payments, inv.id);
       const remaining = calculateRemaining(inv.total, totalPaid);
       const status = calculatePaymentStatus(inv, totalPaid);
@@ -85,7 +83,7 @@ export default function DashboardPage({ profile }) {
     });
 
     // Find invoices due in the next 7 days that are not fully paid
-    const upcoming = savedInvoices.filter(inv => {
+    const upcoming = invoices.filter(inv => {
       const totalPaid = calculateTotalPaid(payments, inv.id);
       const status = calculatePaymentStatus(inv, totalPaid);
       if (status === 'PAID') return false;
@@ -95,9 +93,8 @@ export default function DashboardPage({ profile }) {
     });
 
     setDueSoonInvoices(upcoming);
-    setAllInvoices([...savedInvoices].reverse()); // Newest invoices first
-    setCustomers(savedCustomers);
-  }, []);
+    setAllInvoices([...invoices].reverse()); // Newest invoices first
+  }, [invoices, payments, customers]);
 
   // 4. Helper to find customer name
   function getCustomerName(customerId) {
@@ -106,6 +103,11 @@ export default function DashboardPage({ profile }) {
       return found.name;
     }
     return customerId || 'Customer';
+  }
+
+  function handleLoadDemoData() {
+    loadDemoData();
+    toast.success("Construction business demo data loaded successfully!");
   }
 
   // 5. KPI Cards Configuration with percentage comparison badges
@@ -139,9 +141,9 @@ export default function DashboardPage({ profile }) {
     },
     {
       id: 'overdue',
-      title: 'Overdue Amount',
-      badge: stats.overdue > 0 ? 'Action Required' : 'All Clear',
-      badgeClass: stats.overdue > 0 ? 'badge-danger' : 'badge-success',
+      title: 'Overdue Balance',
+      badge: `${stats.overdueCount} critical`,
+      badgeClass: 'badge-danger',
       value: `₹${stats.overdue.toFixed(2)}`,
       valueColor: 'rgb(229, 72, 77)',
       isWarning: stats.overdue > 0,
@@ -162,7 +164,17 @@ export default function DashboardPage({ profile }) {
             <h1 className="dashboard-greeting">Good afternoon,<br />{bizName}</h1>
             <p className="dashboard-subtitle">Here is your business financial overview.</p>
           </div>
-          <div className="dashboard-header-actions">
+          <div className="dashboard-header-actions" style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+            <button
+              type="button"
+              className="btn btn-secondary"
+              onClick={handleLoadDemoData}
+              title="Re-seed or load full construction business demo data"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+            >
+              <Sparkles size={16} />
+              Load Construction Demo
+            </button>
             <button className="btn btn-primary" onClick={() => navigate('/invoices/new')}>
               + Create Invoice
             </button>
