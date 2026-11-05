@@ -1,6 +1,7 @@
 import { useParams, Link } from 'react-router-dom'
 import { getInvoices, getPayments, getCustomers } from '../services/storage'
 import { formatInvoiceId } from '../utils/paymentUtils'
+import { ArrowLeft, ExternalLink, ShieldCheck, AlertCircle } from 'lucide-react'
 import './CustomerLedgerPage.css'
 
 /**
@@ -27,7 +28,7 @@ function getInvoicePaid(payments, invoiceId) {
 
 /**
  * Determines days overdue relative to current calendar date (normalized to midnight).
- * Returns null if the due date is missing or invalid.
+ * Returns positive integer for overdue, 0 for today, negative for future due date, null if invalid.
  */
 function getDaysOverdue(dueDateString) {
   if (!dueDateString) return null
@@ -44,14 +45,15 @@ function getDaysOverdue(dueDateString) {
 
 /**
  * Calculates invoice aging categories based on calendar days overdue.
- * Fully paid invoices contribute zero. Partially paid contribute their unpaid balance.
+ * Categorized into 5 buckets: Current, 1-30 days, 31-60 days, 61-90 days, 90+ days.
  */
 function calculateInvoiceAging(customerInvoices, payments) {
   const aging = {
     current: 0,
     days1to30: 0,
     days31to60: 0,
-    over60: 0,
+    days61to90: 0,
+    over90: 0,
     unavailable: 0,
   }
 
@@ -73,8 +75,10 @@ function calculateInvoiceAging(customerInvoices, payments) {
       aging.days1to30 += unpaid
     } else if (daysOverdue <= 60) {
       aging.days31to60 += unpaid
+    } else if (daysOverdue <= 90) {
+      aging.days61to90 += unpaid
     } else {
-      aging.over60 += unpaid
+      aging.over90 += unpaid
     }
   })
 
@@ -82,7 +86,7 @@ function calculateInvoiceAging(customerInvoices, payments) {
 }
 
 /**
- * Computes the authoritative payment status for an invoice.
+ * Computes payment status for an invoice.
  */
 function resolveInvoiceStatus(invoice, totalPaid) {
   const total = Number(invoice.total) || 0
@@ -108,7 +112,7 @@ function CustomerLedgerPage({ customers = [] }) {
 
   if (!customer) {
     return (
-      <div className="page">
+      <div className="page customer-ledger-page">
         <div className="card customer-ledger-not-found">
           <h2>Customer Not Found</h2>
           <p>The requested customer does not exist or may have been deleted.</p>
@@ -120,7 +124,7 @@ function CustomerLedgerPage({ customers = [] }) {
     )
   }
 
-  // Filter invoices belonging to this customer (by ID or name fallback), excluding cancelled/drafts
+  // Filter invoices belonging to this customer
   const customerInvoices = invoices.filter((inv) => {
     const matchesCustomer =
       String(inv.customerId) === String(customer.id) ||
@@ -129,7 +133,7 @@ function CustomerLedgerPage({ customers = [] }) {
     return matchesCustomer && isNotDraft
   })
 
-  // Financial Summary Calculations
+  // Lifetime Financial Metrics (Section E.2, E.3, E.4, E.5)
   const lifetimeBilled = customerInvoices.reduce(
     (sum, inv) => sum + (Number(inv.total) || 0),
     0
@@ -140,50 +144,51 @@ function CustomerLedgerPage({ customers = [] }) {
     0
   )
 
-  const outstandingBalance = customerInvoices.reduce((sum, inv) => {
-    const paid = getInvoicePaid(payments, inv.id)
-    return sum + Math.max(0, (Number(inv.total) || 0) - paid)
-  }, 0)
-
+  const outstandingBalance = Math.max(0, lifetimeBilled - paidToDate)
   const invoiceCount = customerInvoices.length
 
-  // Invoice Aging Breakdown
+  // Invoice Aging Breakdown (Section F)
   const aging = calculateInvoiceAging(customerInvoices, payments)
 
   return (
     <div className="page customer-ledger-page">
       {/* Header */}
       <div className="customer-ledger-header">
-        <Link to="/customers" className="customer-ledger-back-link">
-          ← Back to Customers
+        <Link to={`/customers/${customer.id}`} className="customer-ledger-back-link">
+          <ArrowLeft size={16} aria-hidden="true" />
+          <span>Back to {customer.name} Profile</span>
         </Link>
         <div className="customer-ledger-title-group">
-          <h1>Customer Ledger</h1>
+          <h1>Financial Ledger & Account Statement</h1>
           <p className="customer-ledger-subtitle">
             Customer: <strong>{customer.name}</strong>
             {customer.phone ? ` • ${customer.phone}` : ''}
             {customer.email ? ` • ${customer.email}` : ''}
-            {customer.address ? ` • ${customer.address}` : ''}
+            {customer.gstin ? (
+              <span className="ledger-gstin-tag">
+                <ShieldCheck size={12} aria-hidden="true" /> GSTIN: {customer.gstin}
+              </span>
+            ) : null}
           </p>
         </div>
       </div>
 
-      {/* 4 Summary Cards */}
+      {/* 4 Summary Cards (Section E) */}
       <div className="customer-ledger-metrics-grid">
         <div className="card customer-ledger-metric-card">
-          <span className="metric-label">Lifetime billed</span>
+          <span className="metric-label">Lifetime Billed</span>
           <div className="metric-value">{formatINR(lifetimeBilled)}</div>
           <span className="metric-hint">{invoiceCount} total invoice{invoiceCount === 1 ? '' : 's'}</span>
         </div>
 
         <div className="card customer-ledger-metric-card">
-          <span className="metric-label">Paid to date</span>
+          <span className="metric-label">Paid to Date</span>
           <div className="metric-value metric-value-success">{formatINR(paidToDate)}</div>
-          <span className="metric-hint">Verified recorded payments</span>
+          <span className="metric-hint">Verified recorded settlements</span>
         </div>
 
         <div className="card customer-ledger-metric-card">
-          <span className="metric-label">Outstanding</span>
+          <span className="metric-label">Outstanding Balance</span>
           <div
             className={`metric-value ${
               outstandingBalance > 0 ? 'metric-value-danger' : 'metric-value-neutral'
@@ -191,80 +196,85 @@ function CustomerLedgerPage({ customers = [] }) {
           >
             {formatINR(outstandingBalance)}
           </div>
-          <span className="metric-hint">Remaining balance due</span>
+          <span className="metric-hint">
+            {outstandingBalance > 0 ? 'Remaining balance due' : 'All accounts settled'}
+          </span>
         </div>
 
         <div className="card customer-ledger-metric-card">
-          <span className="metric-label">Invoices</span>
+          <span className="metric-label">Total Invoices</span>
           <div className="metric-value">{invoiceCount}</div>
-          <span className="metric-hint">Issued to this customer</span>
+          <span className="metric-hint">Cumulative transactions</span>
         </div>
       </div>
 
-      {/* Invoice Aging Section */}
+      {/* Overdue Aging Section (Section F: 1-30, 31-60, 61-90, 90+ days) */}
       <div className="card customer-ledger-section">
         <div className="section-header">
           <div>
-            <h3>Invoice aging</h3>
+            <h3>Overdue Aging Breakdown</h3>
             <p className="section-description">
-              Aging breakdown of outstanding balances based on calendar days overdue.
+              Analysis of unpaid balances classified by days past due date (Formula: Today − Due Date).
             </p>
           </div>
           {outstandingBalance === 0 && customerInvoices.length > 0 && (
             <span className="aging-status-pill status-pill-success">
-              All settled — No overdue balance
+              All settled — No overdue receivables
             </span>
           )}
         </div>
 
         <div className="customer-ledger-aging-list">
+          {/* Current */}
           <div className="aging-row">
             <div className="aging-row-info">
-              <span className="aging-category">Not overdue / current</span>
+              <span className="aging-category">Current / Not Overdue</span>
               <span className="aging-criteria">Due today or in the future</span>
             </div>
             <div className="aging-row-amount">{formatINR(aging.current)}</div>
           </div>
 
+          {/* 1–30 Days */}
           <div className="aging-row">
             <div className="aging-row-info">
-              <span className="aging-category">1–30 days overdue</span>
+              <span className="aging-category">1–30 Days Overdue</span>
               <span className="aging-criteria">1 to 30 calendar days past due date</span>
             </div>
-            <div
-              className={`aging-row-amount ${
-                aging.days1to30 > 0 ? 'amount-alert' : ''
-              }`}
-            >
+            <div className={`aging-row-amount ${aging.days1to30 > 0 ? 'amount-alert' : ''}`}>
               {formatINR(aging.days1to30)}
             </div>
           </div>
 
+          {/* 31–60 Days */}
           <div className="aging-row">
             <div className="aging-row-info">
-              <span className="aging-category">31–60 days overdue</span>
+              <span className="aging-category">31–60 Days Overdue</span>
               <span className="aging-criteria">31 to 60 calendar days past due date</span>
             </div>
-            <div
-              className={`aging-row-amount ${
-                aging.days31to60 > 0 ? 'amount-alert' : ''
-              }`}
-            >
+            <div className={`aging-row-amount ${aging.days31to60 > 0 ? 'amount-alert' : ''}`}>
               {formatINR(aging.days31to60)}
             </div>
           </div>
 
+          {/* 61–90 Days */}
           <div className="aging-row">
             <div className="aging-row-info">
-              <span className="aging-category">More than 60 days overdue</span>
-              <span className="aging-criteria">&gt; 60 calendar days past due date</span>
+              <span className="aging-category">61–90 Days Overdue</span>
+              <span className="aging-criteria">61 to 90 calendar days past due date</span>
             </div>
-            <div
-              className={`aging-row-amount ${
-                aging.over60 > 0 ? 'amount-alert' : ''
-              }`}
-            >
-              {formatINR(aging.over60)}
+            <div className={`aging-row-amount ${aging.days61to90 > 0 ? 'amount-alert' : ''}`}>
+              {formatINR(aging.days61to90)}
+            </div>
+          </div>
+
+          {/* More than 90 Days */}
+          <div className="aging-row">
+            <div className="aging-row-info">
+              <span className="aging-category">More Than 90 Days Overdue</span>
+              <span className="aging-criteria">&gt; 90 calendar days past due (High priority collection)</span>
+            </div>
+            <div className={`aging-row-amount ${aging.over90 > 0 ? 'amount-alert amount-critical' : ''}`}>
+              {formatINR(aging.over90)}
             </div>
           </div>
 
@@ -287,13 +297,13 @@ function CustomerLedgerPage({ customers = [] }) {
         </div>
       </div>
 
-      {/* Invoice History Table */}
+      {/* Invoice History Table (Section E.1) */}
       <div className="card customer-ledger-section">
         <div className="section-header">
           <div>
-            <h3>Invoice history</h3>
+            <h3>Invoice History & Statement of Account</h3>
             <p className="section-description">
-              All invoices issued to {customer.name} and their payment breakdown.
+              Itemized record of all invoices generated for {customer.name} and their payment status.
             </p>
           </div>
         </div>
@@ -309,12 +319,14 @@ function CustomerLedgerPage({ customers = [] }) {
               <thead>
                 <tr>
                   <th scope="col">Invoice ID</th>
-                  <th scope="col">Date</th>
+                  <th scope="col">Invoice Date</th>
                   <th scope="col">Due Date</th>
-                  <th scope="col">Invoice Total</th>
+                  <th scope="col">Overdue Aging</th>
+                  <th scope="col">Total Amount</th>
                   <th scope="col">Amount Paid</th>
                   <th scope="col">Outstanding</th>
                   <th scope="col">Status</th>
+                  <th scope="col" style={{ textAlign: 'right' }}>Action</th>
                 </tr>
               </thead>
               <tbody>
@@ -323,6 +335,7 @@ function CustomerLedgerPage({ customers = [] }) {
                   const paid = getInvoicePaid(payments, inv.id)
                   const remaining = Math.max(0, total - paid)
                   const status = resolveInvoiceStatus(inv, paid)
+                  const daysOverdue = getDaysOverdue(inv.dueDate)
 
                   let badgeClass = 'badge-pending'
                   if (status === 'PAID') badgeClass = 'badge-paid'
@@ -336,7 +349,28 @@ function CustomerLedgerPage({ customers = [] }) {
                       </td>
                       <td data-label="Date">{inv.date || '—'}</td>
                       <td data-label="Due Date">{inv.dueDate || '—'}</td>
-                      <td data-label="Invoice Total">{formatINR(total)}</td>
+                      
+                      {/* Overdue column as requested in prompt Section F */}
+                      <td data-label="Overdue Aging">
+                        {remaining === 0 ? (
+                          <span className="aging-tag aging-tag-settled">Paid</span>
+                        ) : daysOverdue === null ? (
+                          <span className="aging-tag">—</span>
+                        ) : daysOverdue > 0 ? (
+                          <span className="aging-tag aging-tag-overdue">
+                            <AlertCircle size={12} aria-hidden="true" />
+                            <span>{daysOverdue} {daysOverdue === 1 ? 'day' : 'days'} overdue</span>
+                          </span>
+                        ) : daysOverdue === 0 ? (
+                          <span className="aging-tag aging-tag-warning">Due today</span>
+                        ) : (
+                          <span className="aging-tag aging-tag-ok">
+                            Due in {Math.abs(daysOverdue)} days
+                          </span>
+                        )}
+                      </td>
+
+                      <td data-label="Total">{formatINR(total)}</td>
                       <td data-label="Amount Paid" className="table-amount-paid">
                         {formatINR(paid)}
                       </td>
@@ -350,6 +384,17 @@ function CustomerLedgerPage({ customers = [] }) {
                         <span className={`ledger-status-badge ${badgeClass}`}>
                           {status}
                         </span>
+                      </td>
+                      <td data-label="Action" style={{ textAlign: 'right' }}>
+                        <Link
+                          to="/invoice-preview"
+                          state={{ invoiceId: inv.id }}
+                          className="btn-icon-view"
+                          title="View Invoice Document"
+                        >
+                          <ExternalLink size={13} aria-hidden="true" />
+                          <span>View</span>
+                        </Link>
                       </td>
                     </tr>
                   )

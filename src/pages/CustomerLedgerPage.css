@@ -296,6 +296,79 @@
   border: 1px solid #333947;
 }
 
+.ledger-gstin-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(217, 164, 65, 0.1);
+  border: 1px solid rgba(217, 164, 65, 0.25);
+  color: #d9a441;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11.5px;
+  font-weight: 600;
+  margin-left: 8px;
+}
+
+.amount-critical {
+  color: #ff4d4f !important;
+  font-weight: 800 !important;
+}
+
+/* Overdue Aging Status Tags */
+.aging-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.aging-tag-settled {
+  background: rgba(63, 182, 127, 0.1);
+  color: #3fb67f;
+}
+
+.aging-tag-ok {
+  background: #14171e;
+  border: 1px solid #333947;
+  color: #9aa1af;
+}
+
+.aging-tag-warning {
+  background: rgba(217, 164, 65, 0.12);
+  color: #e6b658;
+}
+
+.aging-tag-overdue {
+  background: rgba(229, 72, 77, 0.15);
+  color: #e5484d;
+  border: 1px solid rgba(229, 72, 77, 0.3);
+}
+
+.btn-icon-view {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  font-size: 12px;
+  border-radius: 6px;
+  background: #14171e;
+  border: 1px solid #333947;
+  color: #e9eaee;
+  text-decoration: none;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.btn-icon-view:hover {
+  background: #20242f;
+  color: #d9a441;
+  border-color: #d9a441;
+}
+
 /* Empty State & Not Found */
 .customer-ledger-not-found {
   padding: 48px 24px;

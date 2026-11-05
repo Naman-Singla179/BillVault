@@ -4,6 +4,60 @@
   width: 100%;
 }
 
+/* Theme Selection Section */
+.business-form-theme-section {
+  margin-bottom: 22px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid rgb(38, 43, 54);
+}
+
+.theme-section-label {
+  display: block;
+  font-size: 11.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #9aa1af;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.theme-toggle-chips {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.theme-chip-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 1px solid #333947;
+  background: #14171e;
+  color: #9aa1af;
+  font-size: 13.5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.theme-chip-btn:hover {
+  background: #20242f;
+  color: #e9eaee;
+}
+
+.theme-chip-btn.active {
+  border-color: #d9a441;
+  background: rgba(217, 164, 65, 0.12);
+  color: #d9a441;
+  font-weight: 600;
+}
+
+.theme-check-icon {
+  margin-left: 2px;
+}
+
 .business-form-logo {
   display: flex;
   align-items: center;
@@ -84,6 +138,11 @@
     flex-direction: column;
     align-items: flex-start;
     gap: 14px;
+  }
+
+  .theme-chip-btn {
+    flex: 1;
+    justify-content: center;
   }
 
   .business-form-actions {

@@ -1,20 +1,94 @@
-.customer-list-search {
-  padding: 16px 20px;
-  border-bottom: 1px solid rgb(38, 43, 54);
+/* Customer Directory Styles */
+
+.customer-list {
+  background: #191d26;
+  border: 1px solid #262b36;
+  border-radius: 10px;
+  overflow: hidden;
 }
 
-.customer-list-search input {
+.customer-list-toolbar {
+  padding: 16px 20px;
+  border-bottom: 1px solid rgb(38, 43, 54);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  background: #191d26;
+}
+
+.customer-search-input-wrap {
+  position: relative;
+  flex: 1;
+  min-width: 260px;
+  max-width: 480px;
+}
+
+.customer-search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #6b7280;
+  pointer-events: none;
+}
+
+.customer-search-input-wrap input {
   width: 100%;
-  max-width: 360px;
   background: rgb(20, 23, 30);
   border: 1px solid rgb(51, 57, 71);
   border-radius: var(--radius-sm);
-  padding: 10px 14px;
-  font-size: 14px;
+  padding: 9px 36px 9px 36px;
+  font-size: 13.5px;
   color: rgb(233, 234, 238);
   min-height: 38px;
+  transition: border-color 0.15s ease;
 }
 
+.customer-search-input-wrap input:focus-visible {
+  outline: 2px solid #d9a441;
+  outline-offset: 2px;
+}
+
+.customer-search-clear {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  color: #9aa1af;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.customer-search-clear:hover {
+  color: #e9eaee;
+  background: #20242f;
+}
+
+.customer-filter-group select {
+  background: rgb(20, 23, 30);
+  border: 1px solid rgb(51, 57, 71);
+  border-radius: var(--radius-sm);
+  padding: 8px 14px;
+  font-size: 13px;
+  color: rgb(233, 234, 238);
+  min-height: 38px;
+  cursor: pointer;
+}
+
+.customer-filter-group select:focus-visible {
+  outline: 2px solid #d9a441;
+  outline-offset: 2px;
+}
+
+/* Table Layout */
 .customer-table-wrap {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
@@ -27,55 +101,252 @@
 
 .customer-table th {
   text-align: left;
-  font-size: 12px;
+  font-size: 11.5px;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: rgb(107, 114, 128);
-  padding: 12px 20px;
+  color: #9aa1af;
+  padding: 12px 18px;
   border-bottom: 1px solid rgb(38, 43, 54);
   white-space: nowrap;
+  background: #191d26;
+  font-weight: 600;
 }
 
 .customer-table td {
-  padding: 14px 20px;
-  font-size: 14px;
+  padding: 14px 18px;
+  font-size: 13.5px;
   border-bottom: 1px solid rgb(38, 43, 54);
   color: rgb(233, 234, 238);
+  vertical-align: middle;
 }
 
 .customer-table tr:last-child td {
   border-bottom: none;
 }
 
-.customer-table th.customer-table-actions-col {
-  text-align: center;
+.customer-table-row:hover {
+  background: #1c212c;
+}
+
+/* Customer Identity with Avatar */
+.customer-identity {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.customer-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(217, 164, 65, 0.12);
+  border: 1px solid rgba(217, 164, 65, 0.25);
+  color: #d9a441;
+  font-weight: 700;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.customer-name-text {
+  font-weight: 600;
+  color: #e9eaee;
+  display: block;
+}
+
+.customer-sub-address {
+  font-size: 11.5px;
+  color: #6b7280;
+  display: block;
+  max-width: 260px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 2px;
+}
+
+/* Contact Info */
+.customer-contact-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.customer-phone {
+  font-weight: 500;
+  color: #e9eaee;
+  font-size: 13px;
+}
+
+.customer-email {
+  font-size: 12px;
+  color: #9aa1af;
+}
+
+/* GSTIN Badge */
+.customer-gstin-badge {
+  font-family: monospace, var(--font-mono);
+  font-size: 12px;
+  color: #9aa1af;
+  background: #14171e;
+  padding: 2px 7px;
+  border-radius: 4px;
+  border: 1px solid #2e3442;
+  white-space: nowrap;
+}
+
+/* Balance Text */
+.customer-balance-text {
+  font-weight: 700;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.balance-due {
+  color: #e5484d;
+}
+
+.balance-settled {
+  color: #3fb67f;
+}
+
+/* Action Buttons */
+.customer-table-actions-col {
+  text-align: right;
   width: 1%;
 }
 
 .customer-table-actions {
   display: flex;
-  gap: 8px;
-  justify-content: flex-start;
+  gap: 6px;
+  justify-content: flex-end;
   align-items: center;
-  flex-wrap: wrap;
 }
 
 .customer-table-actions .btn-icon {
-  padding: 6px 12px;
-  font-size: 13px;
+  padding: 5px 10px;
+  font-size: 12.5px;
   font-weight: 500;
   border-radius: 6px;
   height: 32px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #14171e;
+  border: 1px solid #333947;
+  color: #e9eaee;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.customer-table-actions .btn-icon:hover {
+  background: #20242f;
+  color: #d9a441;
+  border-color: #d9a441;
+}
+
+.customer-table-actions .btn-icon-delete:hover {
+  background: rgba(229, 72, 77, 0.12);
+  color: #e5484d;
+  border-color: #e5484d;
+}
+
+/* Pagination Bar */
+.customer-pagination {
+  padding: 14px 20px;
+  border-top: 1px solid rgb(38, 43, 54);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  background: #191d26;
+}
+
+.pagination-info {
+  font-size: 13px;
+  color: #9aa1af;
+}
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pagination-btn {
+  background: #14171e;
+  border: 1px solid #333947;
+  border-radius: 6px;
+  color: #e9eaee;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  background: #20242f;
+  border-color: #d9a441;
+}
+
+.pagination-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.pagination-pills {
+  display: flex;
+  gap: 4px;
+}
+
+.pagination-pill {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  border: 1px solid #333947;
+  background: #14171e;
+  color: #e9eaee;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.pagination-pill:hover {
+  background: #20242f;
+}
+
+.pagination-pill.active {
+  background: #d9a441;
+  color: #1a1305;
+  border-color: #d9a441;
+  font-weight: 700;
 }
 
 /* Tablet & Mobile Card Transformation */
 @media (max-width: 768px) {
-  .customer-list-search {
+  .customer-list-toolbar {
     padding: 14px 16px;
   }
 
-  .customer-list-search input {
+  .customer-search-input-wrap {
     max-width: 100%;
+    min-width: 100%;
+  }
+
+  .customer-filter-group {
+    width: 100%;
+  }
+
+  .customer-filter-group select {
+    width: 100%;
   }
 
   .customer-table thead {
@@ -93,11 +364,11 @@
   .customer-table tr {
     padding: 16px;
     border-bottom: 1px solid rgb(38, 43, 54);
-    background: rgb(25, 29, 38);
+    background: #191d26;
   }
 
   .customer-table tr:nth-child(even) {
-    background: rgb(20, 23, 30);
+    background: #14171e;
   }
 
   .customer-table td {
@@ -114,29 +385,25 @@
     font-size: 11px;
     text-transform: uppercase;
     letter-spacing: 0.04em;
-    color: rgb(107, 114, 128);
+    color: #9aa1af;
     font-weight: 600;
     flex-shrink: 0;
   }
 
-  .customer-table td[data-label="Name"] {
-    font-size: 16px;
-    font-weight: 700;
-    color: rgb(233, 234, 238);
-    padding-bottom: 8px;
+  .customer-table td.customer-name-cell {
     border-bottom: 1px solid rgb(38, 43, 54);
-    margin-bottom: 4px;
+    padding-bottom: 8px;
+    margin-bottom: 6px;
   }
 
-  .customer-table td[data-label="Name"]::before {
+  .customer-table td.customer-name-cell::before {
     display: none;
   }
 
   .customer-table td[data-label="Actions"] {
-    display: block;
-    margin-top: 10px;
-    padding-top: 10px;
     border-top: 1px solid rgb(38, 43, 54);
+    padding-top: 12px;
+    margin-top: 8px;
   }
 
   .customer-table td[data-label="Actions"]::before {
@@ -146,135 +413,18 @@
   .customer-table-actions {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 8px;
     width: 100%;
+    gap: 8px;
   }
 
   .customer-table-actions .btn-icon {
     width: 100%;
-    height: 36px;
+    justify-content: center;
+    min-height: 36px;
   }
-}
 
-/* Customer Pagination */
-.customer-pagination {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 16px 20px;
-  border-top: 1px solid rgb(38, 43, 54);
-  gap: 16px;
-  flex-wrap: wrap;
-}
-
-.pagination-info {
-  font-size: 13px;
-  color: rgb(154, 161, 175);
-}
-
-.pagination-controls {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.pagination-pills {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex-wrap: wrap;
-}
-
-.pagination-pill {
-  min-width: 34px;
-  height: 34px;
-  padding: 0 10px;
-  border-radius: 999px;
-  background: transparent;
-  border: 1px solid rgb(51, 57, 71);
-  color: rgb(233, 234, 238);
-  font-size: 13px;
-  font-weight: 600;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.pagination-pill:hover:not(.active) {
-  background: rgb(32, 36, 47);
-  border-color: rgb(107, 114, 128);
-}
-
-.pagination-pill.active {
-  background: rgb(217, 164, 65);
-  border-color: rgb(217, 164, 65);
-  color: rgb(26, 19, 5);
-  cursor: default;
-}
-
-.pagination-btn {
-  height: 34px;
-  padding: 0 14px;
-  border-radius: 999px;
-  background: transparent;
-  border: 1px solid rgb(51, 57, 71);
-  color: rgb(233, 234, 238);
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.15s ease;
-}
-
-.pagination-btn:hover:not(:disabled) {
-  background: rgb(32, 36, 47);
-  border-color: rgb(107, 114, 128);
-}
-
-.pagination-btn:disabled {
-  opacity: 0.35;
-  cursor: not-allowed;
-  border-color: rgb(38, 43, 54);
-}
-
-@media (max-width: 640px) {
   .customer-pagination {
     flex-direction: column;
     align-items: center;
-    text-align: center;
-    gap: 12px;
-  }
-
-  .pagination-controls {
-    justify-content: center;
-  }
-}
-
-@media (max-width: 480px) {
-  .customer-table-actions {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  .pagination-pills {
-    justify-content: center;
-    gap: 4px;
-  }
-
-  .pagination-pill {
-    min-width: 30px;
-    height: 30px;
-    font-size: 12px;
-    padding: 0 8px;
-  }
-
-  .pagination-btn {
-    height: 30px;
-    padding: 0 10px;
-    font-size: 12px;
   }
 }

@@ -1,16 +1,16 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getInvoices, getPayments } from '../../services/storage'
 import { calculateTotalPaid, calculatePaymentStatus } from '../../utils/paymentUtils'
 import Modal from '../common/Modal'
 import { useToast } from '../../context/ToastContext'
+import { Search, X, Eye, BookOpen, Edit2, Trash2 } from 'lucide-react'
 import './CustomerList.css'
 
-// Number of customer records to display per page
 const ITEMS_PER_PAGE = 10
 
 /**
- * Calculates Damerau-Levenshtein distance between two strings.
+ * Calculates Damerau-Levenshtein edit distance between two strings.
  * Accounts for insertions, deletions, substitutions, and adjacent transpositions.
  */
 function getLevenshteinDistance(a, b) {
@@ -45,10 +45,10 @@ function getLevenshteinDistance(a, b) {
 }
 
 /**
- * Determines acceptable edit distance threshold based on term length:
- * - <= 2 characters: exact substring required (no typos allowed)
- * - 3 to 5 characters: 1 typo allowed
- * - 6+ characters: up to 2 typos allowed
+ * Determines acceptable edit distance threshold based on token length:
+ * - <= 2 chars: exact substring required (no typos)
+ * - 3 to 5 chars: 1 typo allowed (e.g. "Rahu" -> "Rahul")
+ * - 6+ chars: up to 2 typos allowed (e.g. "Rahuul" -> "Rahul")
  */
 function getMaxAllowedDistance(length) {
   if (length >= 6) return 2
@@ -58,25 +58,34 @@ function getMaxAllowedDistance(length) {
 
 /**
  * Checks whether a customer name matches a search term:
- * 1. Case-insensitive substring match
+ * 1. Direct partial substring
  * 2. Full-phrase fuzzy match with typo tolerance
  * 3. Token-by-token matching across words in the name
  */
-function matchesCustomerName(customerName, term) {
-  if (!customerName) return false
-  const normName = customerName.toLowerCase().trim()
+function matchesCustomerFuzzy(customer, rawTerm) {
+  const term = rawTerm.toLowerCase().trim()
+  if (!term) return true
+
+  // 1. Check exact/substring matches on phone, email, gstin, address
+  if (customer.phone && customer.phone.replace(/\D/g, '').includes(term.replace(/\D/g, ''))) return true
+  if (customer.email && customer.email.toLowerCase().includes(term)) return true
+  if (customer.gstin && customer.gstin.toLowerCase().includes(term)) return true
+  if (customer.address && customer.address.toLowerCase().includes(term)) return true
+
+  // 2. Fuzzy name matching
+  const normName = (customer.name || '').toLowerCase().trim()
   if (!normName) return false
 
-  // 1. Direct partial substring match
+  // Substring in name
   if (normName.includes(term)) return true
 
-  // 2. Full-phrase fuzzy match
+  // Full-name Levenshtein
   const fullMaxDist = getMaxAllowedDistance(term.length)
   if (fullMaxDist > 0 && getLevenshteinDistance(normName, term) <= fullMaxDist) {
     return true
   }
 
-  // 3. Token/word-level matching
+  // Token-by-token comparison
   const queryWords = term.split(/\s+/).filter(Boolean)
   const nameWords = normName.split(/\s+/).filter(Boolean)
 
@@ -94,8 +103,14 @@ function matchesCustomerName(customerName, term) {
   return false
 }
 
+function formatINR(amount) {
+  const num = Number(amount) || 0
+  return '₹' + num.toLocaleString('en-IN')
+}
+
 function CustomerList({ customers = [], onEdit, onDelete }) {
   const [query, setQuery] = useState('')
+  const [statusFilter, setStatusFilter] = useState('All')
   const [currentPage, setCurrentPage] = useState(1)
   const [customerToDelete, setCustomerToDelete] = useState(null)
   const navigate = useNavigate()
@@ -104,19 +119,74 @@ function CustomerList({ customers = [], onEdit, onDelete }) {
   const invoices = getInvoices()
   const payments = getPayments()
 
-  // 1. Filter customers by query (name with fuzzy matching, email & phone with substring matching)
-  const filtered = customers.filter((c) => {
-    const term = query.trim().toLowerCase()
-    if (!term) return true
+  // Calculate customer financial metrics
+  const customerFinancials = useMemo(() => {
+    const map = new Map()
 
-    const matchesName = matchesCustomerName(c.name, term)
-    const matchesEmail = c.email && c.email.toLowerCase().includes(term)
-    const matchesPhone = c.phone && c.phone.toLowerCase().includes(term)
+    customers.forEach((c) => {
+      const custInvoices = invoices.filter(
+        (i) => String(i.customerId) === String(c.id) || i.customerId === c.name
+      )
 
-    return matchesName || matchesEmail || matchesPhone
-  })
+      let totalBilled = 0
+      let totalPaid = 0
+      let hasOverdue = false
+      let hasPending = false
 
-  // 2. Calculate pagination metrics from filtered results
+      custInvoices.forEach((inv) => {
+        const invTotal = Number(inv.total) || 0
+        const invPaid = calculateTotalPaid(payments, inv.id)
+        totalBilled += invTotal
+        totalPaid += invPaid
+
+        const status = calculatePaymentStatus(inv, invPaid)
+        if (status === 'OVERDUE') hasOverdue = true
+        if (status === 'PENDING' || status === 'PARTIALLY PAID') hasPending = true
+      })
+
+      const outstanding = Math.max(0, totalBilled - totalPaid)
+
+      let statusBadge = { label: 'NO INVOICES', class: 'badge-muted' }
+      if (custInvoices.length > 0) {
+        if (hasOverdue) statusBadge = { label: 'OVERDUE', class: 'badge-danger' }
+        else if (hasPending) statusBadge = { label: 'PENDING', class: 'badge-warning' }
+        else statusBadge = { label: 'PAID', class: 'badge-success' }
+      }
+
+      map.set(String(c.id), {
+        totalBilled,
+        totalPaid,
+        outstanding,
+        invoiceCount: custInvoices.length,
+        statusBadge,
+      })
+    })
+
+    return map
+  }, [customers, invoices, payments])
+
+  // Filter customers by query and status
+  const filtered = useMemo(() => {
+    return customers.filter((c) => {
+      // 1. Fuzzy search
+      if (!matchesCustomerFuzzy(c, query)) {
+        return false
+      }
+
+      // 2. Status filter
+      if (statusFilter !== 'All') {
+        const stats = customerFinancials.get(String(c.id))
+        const badgeLabel = stats?.statusBadge?.label || 'NO INVOICES'
+        if (statusFilter === 'overdue' && badgeLabel !== 'OVERDUE') return false
+        if (statusFilter === 'pending' && badgeLabel !== 'PENDING') return false
+        if (statusFilter === 'paid' && badgeLabel !== 'PAID') return false
+      }
+
+      return true
+    })
+  }, [customers, query, statusFilter, customerFinancials])
+
+  // Pagination calculation
   const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE))
   const validCurrentPage = Math.min(Math.max(1, currentPage), totalPages)
   const startIndex = (validCurrentPage - 1) * ITEMS_PER_PAGE
@@ -124,7 +194,7 @@ function CustomerList({ customers = [], onEdit, onDelete }) {
 
   function handleSearchChange(e) {
     setQuery(e.target.value)
-    setCurrentPage(1) // Reset pagination to page 1 whenever search query changes
+    setCurrentPage(1)
   }
 
   function handleConfirmDelete() {
@@ -139,35 +209,49 @@ function CustomerList({ customers = [], onEdit, onDelete }) {
     setCustomerToDelete(null)
   }
 
-  function getCustomerStatus(customer) {
-    const custInvoices = invoices.filter(i => String(i.customerId) === String(customer.id) || i.customerId === customer.name);
-    if (custInvoices.length === 0) return { label: 'NO INVOICES', class: 'badge-muted' };
-
-    let hasOverdue = false;
-    let hasPending = false;
-
-    custInvoices.forEach(inv => {
-      const totalPaid = calculateTotalPaid(payments, inv.id);
-      const status = calculatePaymentStatus(inv, totalPaid);
-      if (status === 'OVERDUE') hasOverdue = true;
-      if (status === 'PENDING' || status === 'PARTIALLY PAID') hasPending = true;
-    });
-
-    if (hasOverdue) return { label: 'OVERDUE', class: 'badge-danger' };
-    if (hasPending) return { label: 'PENDING', class: 'badge-warning' };
-    return { label: 'PAID', class: 'badge-success' };
-  }
-
   return (
     <div className="card customer-list">
-      <div className="customer-list-search" role="search" aria-label="Customer search">
-        <input
-          type="search"
-          value={query}
-          onChange={handleSearchChange}
-          placeholder="Search customers by name, email or phone"
-          aria-label="Search customers"
-        />
+      {/* Search and Filters Toolbar */}
+      <div className="customer-list-toolbar" role="search" aria-label="Customer search and filters">
+        <div className="customer-search-input-wrap">
+          <Search size={16} className="customer-search-icon" aria-hidden="true" />
+          <input
+            type="search"
+            value={query}
+            onChange={handleSearchChange}
+            placeholder="Fuzzy search by name, phone, email, or GSTIN (e.g. Rahuul, Skyline, 98141)..."
+            aria-label="Search customers"
+          />
+          {query && (
+            <button
+              type="button"
+              className="customer-search-clear"
+              onClick={() => {
+                setQuery('')
+                setCurrentPage(1)
+              }}
+              aria-label="Clear search"
+            >
+              <X size={14} aria-hidden="true" />
+            </button>
+          )}
+        </div>
+
+        <div className="customer-filter-group">
+          <select
+            value={statusFilter}
+            onChange={(e) => {
+              setStatusFilter(e.target.value)
+              setCurrentPage(1)
+            }}
+            aria-label="Filter customers by payment status"
+          >
+            <option value="All">All Statuses</option>
+            <option value="overdue">Overdue Invoices</option>
+            <option value="pending">Pending Payments</option>
+            <option value="paid">Fully Settled</option>
+          </select>
+        </div>
       </div>
 
       {filtered.length === 0 ? (
@@ -176,8 +260,22 @@ function CustomerList({ customers = [], onEdit, onDelete }) {
           <p>
             {customers.length === 0
               ? 'Add your first customer to get started.'
-              : `No customers matched "${query.trim()}". Try a different search term or check spelling.`}
+              : `No customers matched "${query.trim()}". Try checking spelling or resetting your filter.`}
           </p>
+          {query && (
+            <button
+              type="button"
+              className="btn btn-secondary"
+              style={{ marginTop: 12 }}
+              onClick={() => {
+                setQuery('')
+                setStatusFilter('All')
+                setCurrentPage(1)
+              }}
+            >
+              Reset Search
+            </button>
+          )}
         </div>
       ) : (
         <>
@@ -185,72 +283,136 @@ function CustomerList({ customers = [], onEdit, onDelete }) {
             <table className="customer-table" aria-label="Customers directory">
               <thead>
                 <tr>
-                  <th scope="col">Name</th>
-                  <th scope="col">Email</th>
-                  <th scope="col">Phone</th>
-                  <th scope="col">Address</th>
-                  <th scope="col">Status</th>
+                  <th scope="col">Customer Name</th>
+                  <th scope="col">Phone & Email</th>
+                  <th scope="col">GSTIN</th>
+                  <th scope="col">Outstanding</th>
+                  <th scope="col">Payment Status</th>
                   <th scope="col" className="customer-table-actions-col">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {paginatedCustomers.map((customer) => (
-                  <tr key={customer.id}>
-                    <td data-label="Name">{customer.name}</td>
-                    <td data-label="Email">{customer.email || '—'}</td>
-                    <td data-label="Phone">{customer.phone || '—'}</td>
-                    <td data-label="Address">{customer.address || '—'}</td>
-                    <td data-label="Status">
-                      <span className={`badge ${getCustomerStatus(customer).class}`}>
-                        {getCustomerStatus(customer).label}
-                      </span>
-                    </td>
-                    <td data-label="Actions">
-                      <div className="customer-table-actions">
-                        <button
-                          type="button"
-                          className="btn-icon"
-                          aria-label={`View details for ${customer.name}`}
-                          onClick={() => navigate(`/customers/${customer.id}`)}
+                {paginatedCustomers.map((customer) => {
+                  const fin = customerFinancials.get(String(customer.id)) || {
+                    outstanding: 0,
+                    statusBadge: { label: 'NO INVOICES', class: 'badge-muted' },
+                  }
+                  const initials = (customer.name || 'C')
+                    .split(' ')
+                    .map((w) => w[0])
+                    .slice(0, 2)
+                    .join('')
+                    .toUpperCase()
+
+                  return (
+                    <tr key={customer.id} className="customer-table-row">
+                      {/* Name & Avatar */}
+                      <td data-label="Name" className="customer-name-cell">
+                        <div className="customer-identity">
+                          <div className="customer-avatar" aria-hidden="true">{initials}</div>
+                          <div>
+                            <span className="customer-name-text">{customer.name}</span>
+                            {customer.address && (
+                              <span className="customer-sub-address">{customer.address}</span>
+                            )}
+                          </div>
+                        </div>
+                      </td>
+
+                      {/* Contact Info */}
+                      <td data-label="Contact" className="customer-contact-cell">
+                        <div className="customer-contact-info">
+                          <span className="customer-phone">{customer.phone || '—'}</span>
+                          <span className="customer-email">{customer.email || '—'}</span>
+                        </div>
+                      </td>
+
+                      {/* GSTIN */}
+                      <td data-label="GSTIN" className="customer-gstin-cell">
+                        {customer.gstin ? (
+                          <span className="customer-gstin-badge">{customer.gstin}</span>
+                        ) : (
+                          <span className="text-muted">—</span>
+                        )}
+                      </td>
+
+                      {/* Outstanding Balance */}
+                      <td data-label="Outstanding" className="customer-balance-cell">
+                        <span
+                          className={`customer-balance-text ${
+                            fin.outstanding > 0 ? 'balance-due' : 'balance-settled'
+                          }`}
                         >
-                          View
-                        </button>
-                        <button
-                          type="button"
-                          className="btn-icon"
-                          aria-label={`View ledger for ${customer.name}`}
-                          onClick={() => navigate(`/customers/${customer.id}/ledger`)}
-                        >
-                          Ledger
-                        </button>
-                        <button
-                          type="button"
-                          className="btn-icon"
-                          aria-label={`Edit ${customer.name}`}
-                          onClick={() => onEdit(customer)}
-                        >
-                          Edit
-                        </button>
-                        <button
-                          type="button"
-                          className="btn-icon"
-                          aria-label={`Delete ${customer.name}`}
-                          onClick={() => setCustomerToDelete(customer)}
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                          {formatINR(fin.outstanding)}
+                        </span>
+                      </td>
+
+                      {/* Status */}
+                      <td data-label="Status">
+                        <span className={`badge ${fin.statusBadge.class}`}>
+                          {fin.statusBadge.label}
+                        </span>
+                      </td>
+
+                      {/* Action buttons */}
+                      <td data-label="Actions">
+                        <div className="customer-table-actions">
+                          <button
+                            type="button"
+                            className="btn-icon"
+                            aria-label={`View details for ${customer.name}`}
+                            onClick={() => navigate(`/customers/${customer.id}`)}
+                            title="View Customer Profile"
+                          >
+                            <Eye size={14} aria-hidden="true" />
+                            <span>View</span>
+                          </button>
+                          <button
+                            type="button"
+                            className="btn-icon"
+                            aria-label={`View ledger for ${customer.name}`}
+                            onClick={() => navigate(`/customers/${customer.id}/ledger`)}
+                            title="View Financial Ledger"
+                          >
+                            <BookOpen size={14} aria-hidden="true" />
+                            <span>Ledger</span>
+                          </button>
+                          <button
+                            type="button"
+                            className="btn-icon"
+                            aria-label={`Edit ${customer.name}`}
+                            onClick={() => onEdit(customer)}
+                            title="Edit Customer"
+                          >
+                            <Edit2 size={14} aria-hidden="true" />
+                            <span>Edit</span>
+                          </button>
+                          <button
+                            type="button"
+                            className="btn-icon btn-icon-delete"
+                            aria-label={`Delete ${customer.name}`}
+                            onClick={() => setCustomerToDelete(customer)}
+                            title="Delete Customer"
+                          >
+                            <Trash2 size={14} aria-hidden="true" />
+                            <span>Delete</span>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  )
+                })}
               </tbody>
             </table>
           </div>
 
+          {/* Pagination Controls */}
           <div className="customer-pagination" aria-label="Customer list pagination">
             <div className="pagination-info">
-              Showing {startIndex + 1}–{Math.min(startIndex + ITEMS_PER_PAGE, filtered.length)} of {filtered.length} {filtered.length === 1 ? 'customer' : 'customers'}
+              Showing {startIndex + 1}–{Math.min(startIndex + ITEMS_PER_PAGE, filtered.length)} of {filtered.length}{' '}
+              {filtered.length === 1 ? 'customer' : 'customers'}
             </div>
+
             <div className="pagination-controls">
               <button
                 type="button"
@@ -261,6 +423,7 @@ function CustomerList({ customers = [], onEdit, onDelete }) {
               >
                 Previous
               </button>
+
               <div className="pagination-pills">
                 {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
                   <button
@@ -275,6 +438,7 @@ function CustomerList({ customers = [], onEdit, onDelete }) {
                   </button>
                 ))}
               </div>
+
               <button
                 type="button"
                 className="pagination-btn"
@@ -295,16 +459,24 @@ function CustomerList({ customers = [], onEdit, onDelete }) {
         onClose={() => setCustomerToDelete(null)}
         title="Delete Customer"
         onConfirm={handleConfirmDelete}
-        confirmText="Delete"
+        confirmText="Confirm Delete"
         cancelText="Cancel"
         danger={true}
       >
         <p style={{ margin: 0, lineHeight: 1.6, color: 'rgb(209, 213, 219)', fontSize: '14px' }}>
           Are you sure you want to delete customer <strong style={{ color: 'rgb(233, 234, 238)' }}>{customerToDelete?.name}</strong>?
         </p>
-        <p style={{ margin: '8px 0 0', fontSize: '13px', color: 'rgb(154, 161, 175)' }}>
-          This action cannot be undone. Customer data will be removed.
-        </p>
+        <div style={{
+          marginTop: '12px',
+          padding: '10px 14px',
+          background: 'rgba(217, 164, 65, 0.08)',
+          border: '1px solid rgba(217, 164, 65, 0.25)',
+          borderRadius: '6px',
+          fontSize: '13px',
+          color: 'rgb(217, 164, 65)'
+        }}>
+          <strong>Note:</strong> Deleting this customer removes their profile from your active directory. Any existing historical invoices already issued to them will retain their recorded billing transactions.
+        </div>
       </Modal>
     </div>
   )

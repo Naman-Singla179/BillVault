@@ -1,5 +1,7 @@
+import { useEffect } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
 import Navbar from './Navbar'
+import { getSettings } from '../../services/storage'
 import './PageLayout.css'
 
 const TITLES = [
@@ -7,8 +9,8 @@ const TITLES = [
   { match: '/invoices', title: 'Invoices' },
   { match: '/customers', title: 'Customers' },
   { match: '/payments', title: 'Payments' },
-  { match: '/settings/business-profile', title: 'Business Profile' },
-  { match: '/settings', title: 'Settings' },
+  { match: '/products', title: 'Products' },
+  { match: '/business-profile', title: 'Business Profile' },
   { match: '/invoice-preview', title: 'Invoice Preview' },
 ]
 
@@ -19,6 +21,13 @@ function getTitle(pathname) {
 
 function PageLayout({ profile }) {
   const location = useLocation()
+
+  // Apply saved theme (dark or light) on mount
+  useEffect(() => {
+    const settings = getSettings()
+    const theme = settings?.theme || 'dark'
+    document.documentElement.setAttribute('data-theme', theme)
+  }, [])
 
   return (
     <div className="app-shell">

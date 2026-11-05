@@ -294,3 +294,175 @@ textarea:focus-visible,
     font-size: 13.5px;
   }
 }
+
+/* =========================================================
+   Light Theme Support (Configurable in Business Profile / Settings)
+   ========================================================= */
+[data-theme="light"] {
+  color-scheme: light;
+}
+
+[data-theme="light"] body {
+  background: #f6f8fa;
+  color: #1f2328;
+}
+
+[data-theme="light"] h1,
+[data-theme="light"] h2,
+[data-theme="light"] h3,
+[data-theme="light"] h4 {
+  color: #1f2328;
+}
+
+[data-theme="light"] p {
+  color: #57606a;
+}
+
+[data-theme="light"] .navbar {
+  background: #ffffff;
+  border-bottom-color: #d0d7de;
+}
+
+[data-theme="light"] .navbar-brand-name {
+  color: #1f2328;
+}
+
+[data-theme="light"] .navbar-link {
+  color: #57606a;
+}
+
+[data-theme="light"] .navbar-link:hover {
+  background: #f3f4f6;
+  color: #1f2328;
+}
+
+[data-theme="light"] .navbar-link-active {
+  background: #fff8eb;
+  color: #b07d17;
+}
+
+[data-theme="light"] .navbar-business-name {
+  color: #1f2328;
+}
+
+[data-theme="light"] .navbar-avatar {
+  background: #f3f4f6;
+  border-color: #d0d7de;
+  color: #1f2328;
+}
+
+[data-theme="light"] .navbar-mobile-menu {
+  background: #ffffff;
+  border-bottom-color: #d0d7de;
+}
+
+[data-theme="light"] .navbar-mobile-link {
+  color: #57606a;
+}
+
+[data-theme="light"] .navbar-mobile-link:hover {
+  background: #f3f4f6;
+  color: #1f2328;
+}
+
+[data-theme="light"] .navbar-mobile-link-active {
+  background: #fff8eb;
+  color: #b07d17;
+}
+
+[data-theme="light"] .card {
+  background: #ffffff;
+  border-color: #d0d7de;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+[data-theme="light"] input,
+[data-theme="light"] select,
+[data-theme="light"] textarea {
+  background: #ffffff;
+  border-color: #d0d7de;
+  color: #1f2328;
+}
+
+[data-theme="light"] .btn-secondary {
+  background: #f6f8fa;
+  border-color: #d0d7de;
+  color: #1f2328;
+}
+
+[data-theme="light"] .btn-secondary:hover {
+  background: #eaeef2;
+}
+
+[data-theme="light"] .customer-table th,
+[data-theme="light"] .product-table th,
+[data-theme="light"] .customer-ledger-table th,
+[data-theme="light"] .customer-invoices-table th {
+  background: #f6f8fa;
+  border-bottom-color: #d0d7de;
+  color: #57606a;
+}
+
+[data-theme="light"] .customer-table td,
+[data-theme="light"] .product-table td,
+[data-theme="light"] .customer-ledger-table td,
+[data-theme="light"] .customer-invoices-table td {
+  border-bottom-color: #eaeef2;
+  color: #1f2328;
+}
+
+[data-theme="light"] .customer-table-row:hover,
+[data-theme="light"] .product-table-row:hover {
+  background: #f6f8fa;
+}
+
+[data-theme="light"] .customer-name-text,
+[data-theme="light"] .product-cell-name,
+[data-theme="light"] .price-text,
+[data-theme="light"] .stat-value,
+[data-theme="light"] .metric-value {
+  color: #1f2328;
+}
+
+[data-theme="light"] .customer-avatar {
+  background: #fff8eb;
+  border-color: #f5d085;
+}
+
+[data-theme="light"] .customer-search-input-wrap input,
+[data-theme="light"] .customer-filter-group select,
+[data-theme="light"] .product-search-box input,
+[data-theme="light"] .filter-select-group select,
+[data-theme="light"] .pagination-btn,
+[data-theme="light"] .pagination-pill,
+[data-theme="light"] .btn-action-icon,
+[data-theme="light"] .btn-card-action,
+[data-theme="light"] .btn-icon-view,
+[data-theme="light"] .product-view-toggle,
+[data-theme="light"] .theme-chip-btn {
+  background: #ffffff;
+  border-color: #d0d7de;
+  color: #1f2328;
+}
+
+[data-theme="light"] .contact-chip,
+[data-theme="light"] .hsn-code,
+[data-theme="light"] .hsn-pill,
+[data-theme="light"] .customer-gstin-badge {
+  background: #f6f8fa;
+  border-color: #d0d7de;
+  color: #57606a;
+}
+
+[data-theme="light"] .product-stat-card,
+[data-theme="light"] .financial-stat-card,
+[data-theme="light"] .customer-ledger-metric-card,
+[data-theme="light"] .product-item-card {
+  background: #ffffff;
+  border-color: #d0d7de;
+}
+
+[data-theme="light"] .aging-row {
+  border-bottom-color: #eaeef2;
+}
+
