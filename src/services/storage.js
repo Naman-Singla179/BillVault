@@ -1,4 +1,5 @@
 export const STORAGE_EVENT = "billvault:storage-changed";
+export const STORAGE_ERROR_EVENT = "billvault:storage-error";
 
 export const KEYS = {
   customers: "billvault_customers",
@@ -18,6 +19,9 @@ function safeGet(key, defaultValue) {
     return JSON.parse(raw);
   } catch (error) {
     console.error(`storage.js: failed to read "${key}", using default.`, error);
+    window.dispatchEvent(
+      new CustomEvent(STORAGE_ERROR_EVENT, { detail: { key, type: "read" } })
+    );
     return defaultValue;
   }
 }
@@ -29,6 +33,9 @@ function safeSet(key, value) {
     return true;
   } catch (error) {
     console.error(`storage.js: failed to save "${key}".`, error);
+    window.dispatchEvent(
+      new CustomEvent(STORAGE_ERROR_EVENT, { detail: { key, type: "write" } })
+    );
     return false;
   }
 }

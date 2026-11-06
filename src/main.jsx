@@ -5,15 +5,18 @@ import store from './store'
 import App from './App.jsx'
 import { ToastProvider } from './context/ToastContext'
 import { AppProvider } from './context/AppContext'
+import ErrorBoundary from './components/common/ErrorBoundary'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <Provider store={store}>
-      <ToastProvider>
-        <AppProvider>
-          <App />
-        </AppProvider>
-      </ToastProvider>
-    </Provider>
+    <ErrorBoundary>
+      <Provider store={store}>
+        <ToastProvider>
+          <AppProvider>
+            <App />
+          </AppProvider>
+        </ToastProvider>
+      </Provider>
+    </ErrorBoundary>
   </StrictMode>,
 )

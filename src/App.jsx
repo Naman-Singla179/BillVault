@@ -1,7 +1,9 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { useApp } from './context/AppContext'
+import ErrorBoundary from './components/common/ErrorBoundary'
 import PageLayout from './components/layout/PageLayout'
 import DashboardPage from './pages/DashboardPage'
+import NotFoundPage from './pages/NotFoundPage'
 
 import CustomersPage from './pages/CustomersPage'
 import CustomerDetailsPage from './pages/CustomerDetailsPage'
@@ -15,6 +17,20 @@ import CreateInvoice from './pages/Invoices/CreateInvoice'
 import Payments from './pages/Payments/Payments'
 import './styles/global.css'
 
+/**
+ * Wraps each page with an ErrorBoundary keyed to the current route.
+ * When a page crashes its content area shows the fallback; the navbar
+ * stays visible. Navigating to another route clears the error.
+ */
+function RouteGuard({ children }) {
+  const location = useLocation();
+  return (
+    <ErrorBoundary resetKey={location.pathname}>
+      {children}
+    </ErrorBoundary>
+  );
+}
+
 function App() {
   const { customers, businessProfile, addCustomer, updateCustomer, deleteCustomer, setBusinessProfile } = useApp()
 
@@ -25,58 +41,64 @@ function App() {
         <Route element={<PageLayout profile={businessProfile} />}>
           <Route
             path="dashboard"
-            element={<DashboardPage profile={businessProfile} />}
+            element={<RouteGuard><DashboardPage profile={businessProfile} /></RouteGuard>}
           />
           <Route
             path="invoices"
-            element={<Invoices />}
+            element={<RouteGuard><Invoices /></RouteGuard>}
           />
           <Route
             path="invoices/new"
-            element={<CreateInvoice customers={customers} onAddCustomer={addCustomer} />}
+            element={<RouteGuard><CreateInvoice customers={customers} onAddCustomer={addCustomer} /></RouteGuard>}
           />
           <Route
             path="invoices/edit/:id"
-            element={<CreateInvoice customers={customers} onAddCustomer={addCustomer} />}
+            element={<RouteGuard><CreateInvoice customers={customers} onAddCustomer={addCustomer} /></RouteGuard>}
           />
           <Route
             path="customers"
             element={
-              <CustomersPage
-                customers={customers}
-                onAdd={addCustomer}
-                onUpdate={updateCustomer}
-                onDelete={deleteCustomer}
-              />
+              <RouteGuard>
+                <CustomersPage
+                  customers={customers}
+                  onAdd={addCustomer}
+                  onUpdate={updateCustomer}
+                  onDelete={deleteCustomer}
+                />
+              </RouteGuard>
             }
           />
           <Route
             path="customers/:id"
             element={
-              <CustomerDetailsPage
-                customers={customers}
-                onUpdate={updateCustomer}
-                onDelete={deleteCustomer}
-              />
+              <RouteGuard>
+                <CustomerDetailsPage
+                  customers={customers}
+                  onUpdate={updateCustomer}
+                  onDelete={deleteCustomer}
+                />
+              </RouteGuard>
             }
           />
           <Route
             path="customers/:id/ledger"
-            element={<CustomerLedgerPage customers={customers} />}
+            element={<RouteGuard><CustomerLedgerPage customers={customers} /></RouteGuard>}
           />
           <Route
             path="payments"
-            element={<Payments />}
+            element={<RouteGuard><Payments /></RouteGuard>}
           />
           <Route
             path="products"
-            element={<ProductsPage />}
+            element={<RouteGuard><ProductsPage /></RouteGuard>}
           />
           <Route
             path="business-profile"
-            element={<BusinessProfilePage profile={businessProfile} onSave={setBusinessProfile} />}
+            element={<RouteGuard><BusinessProfilePage profile={businessProfile} onSave={setBusinessProfile} /></RouteGuard>}
           />
-          <Route path="invoice-preview" element={<InvoicePreviewPage />} />
+          <Route path="invoice-preview" element={<RouteGuard><InvoicePreviewPage /></RouteGuard>} />
+          {/* Catch-all: unknown paths inside the layout keep the navbar visible */}
+          <Route path="*" element={<NotFoundPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

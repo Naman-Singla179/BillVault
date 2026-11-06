@@ -3,10 +3,11 @@
 // (see storage.js), and this provider re-reads the changed data, so
 // pages that still call storage.js directly stay in sync too.
 
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
 import {
   KEYS,
   STORAGE_EVENT,
+  STORAGE_ERROR_EVENT,
   getCustomers,
   saveCustomers,
   getInvoices,
@@ -21,6 +22,7 @@ import {
   saveSettings,
 } from "../services/storage";
 import { reconcileInvoices } from "../utils/paymentUtils";
+import { useToast } from "./ToastContext";
 
 const AppContext = createContext(null);
 
@@ -116,6 +118,11 @@ export function AppProvider({ children }) {
   const [businessProfile, setBusinessState] = useState(getBusiness);
   const [settings, setSettingsState] = useState(getSettings);
 
+  const toast = useToast();
+
+  // Track which (type+key) combos have already been toasted this session.
+  const shownStorageErrors = useRef(new Set());
+
   useEffect(() => {
     const refreshers = {
       [KEYS.customers]: () => setCustomers(getCustomers()),
@@ -160,6 +167,31 @@ export function AppProvider({ children }) {
       saveInvoices(updatedInvoices);
     }
   }, [invoices, payments]);
+
+  // Listen for storage errors and show a friendly toast once per type+key.
+  useEffect(() => {
+    function handleStorageError(event) {
+      const { key, type } = event.detail ?? {};
+      const dedupKey = `${type}:${key}`;
+      if (shownStorageErrors.current.has(dedupKey)) return;
+      shownStorageErrors.current.add(dedupKey);
+
+      if (type === "write") {
+        toast.error(
+          "Couldn't save your changes. Your browser storage may be full."
+        );
+      } else if (type === "read") {
+        toast.warning(
+          "Some saved data couldn't be read, so defaults are being shown."
+        );
+      }
+    }
+
+    window.addEventListener(STORAGE_ERROR_EVENT, handleStorageError);
+    return () => {
+      window.removeEventListener(STORAGE_ERROR_EVENT, handleStorageError);
+    };
+  }, [toast]);
 
   const value = useMemo(
     () => ({

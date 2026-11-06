@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useState, useEffect, useRef } from "react";
+import { useLocation, Link } from "react-router-dom";
 import { formatInvoiceId, calculateTotalPaid } from "../../utils/paymentUtils";
 import { useApp } from "../../context/AppContext";
 import { useToast } from "../../context/ToastContext";
@@ -10,12 +10,45 @@ function PaymentForm({ onPaymentAdded }) {
   const toast = useToast();
   const { invoices: allInvoices, customers, payments, addPayment } = useApp();
 
-  const [selectedInvoice, setSelectedInvoice] = useState(location.state?.invoiceId || "");
-  const [amount, setAmount] = useState(location.state?.amount || "");
+  const prefillInvoiceId = location.state?.invoiceId || "";
+  const prefillAmount    = location.state?.amount    || "";
+
+  // Warn once if the prefilled invoice id doesn't exist in the list.
+  const warnedMissingRef = useRef(false);
+  useEffect(() => {
+    if (
+      prefillInvoiceId &&
+      !warnedMissingRef.current &&
+      allInvoices.length > 0 &&
+      !allInvoices.find((inv) => String(inv.id) === String(prefillInvoiceId))
+    ) {
+      warnedMissingRef.current = true;
+      toast.info("That invoice couldn't be found.");
+    }
+  }, [prefillInvoiceId, allInvoices, toast]);
+
+  // If the prefill id exists, start with it; otherwise start empty.
+  const resolvedPrefill =
+    prefillInvoiceId &&
+    allInvoices.find((inv) => String(inv.id) === String(prefillInvoiceId))
+      ? prefillInvoiceId
+      : "";
+
+  const [selectedInvoice, setSelectedInvoice] = useState(resolvedPrefill);
+  const [amount, setAmount] = useState(resolvedPrefill ? prefillAmount : "");
   const [method, setMethod] = useState("Cash");
   const [date, setDate] = useState("");
   const [error, setError] = useState("");
 
+  // ── Invoice availability checks ──────────────────────────────────────────
+  const hasAnyInvoices = allInvoices.length > 0;
+  const invoicesWithBalance = allInvoices.filter((inv) => {
+    const paid = calculateTotalPaid(payments, inv.id);
+    return Number(inv.total) - paid > 0;
+  });
+  const hasOutstanding = invoicesWithBalance.length > 0;
+
+  // ── Submission ───────────────────────────────────────────────────────────
   function handleSubmit(event) {
     event.preventDefault();
     setError("");
@@ -69,6 +102,7 @@ function PaymentForm({ onPaymentAdded }) {
     }
   }
 
+  // ── Derived display values ───────────────────────────────────────────────
   const currentInvoice = allInvoices.find((inv) => String(inv.id) === String(selectedInvoice));
   const currentInvoicePaid = currentInvoice ? calculateTotalPaid(payments, currentInvoice.id) : 0;
   const invoiceRemaining = currentInvoice ? Math.max(0, Number(currentInvoice.total) - currentInvoicePaid) : 0;
@@ -83,6 +117,31 @@ function PaymentForm({ onPaymentAdded }) {
   const qrAmount = isAmountWithinBalance ? enteredAmount : invoiceRemaining;
   const qrInvoiceId = currentInvoice ? formatInvoiceId(currentInvoice.id) : "";
 
+  // ── Friendly empty states ────────────────────────────────────────────────
+  if (!hasAnyInvoices) {
+    return (
+      <div className="card empty-state" style={{ padding: "40px 24px" }}>
+        <h3>No invoices yet</h3>
+        <p style={{ marginBottom: "20px" }}>
+          Create an invoice first before recording a payment.
+        </p>
+        <Link to="/invoices" className="btn btn-primary">
+          Go to Invoices
+        </Link>
+      </div>
+    );
+  }
+
+  if (!hasOutstanding) {
+    return (
+      <div className="card empty-state" style={{ padding: "40px 24px" }}>
+        <h3>All invoices are fully paid</h3>
+        <p>There are no outstanding balances to record a payment against.</p>
+      </div>
+    );
+  }
+
+  // ── Normal form ──────────────────────────────────────────────────────────
   return (
     <form onSubmit={handleSubmit} className="card" style={{ padding: "24px" }}>
       <h2 style={{ marginBottom: "16px" }}>Record Payment</h2>
